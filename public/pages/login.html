@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Community | Login</title>
+    <link rel="stylesheet" href="../css/pico.min.css">
+    <script type="module" src="../js/defaults.js"></script>
+    <script type="module" src="../js/auth.js"></script>
+    <script type="module" src="../js/login.js"></script>
+  </head>
+  <body>
+    <header class="container">
+      <nav>
+        <ul>
+          <li><strong>Community</strong></li>
+        </ul>
+        <ul>
+          <li data-auth="guest"><a href="/pages/signup.html" class="secondary">Sign Up</a></li>
+          <li data-auth="user"><a href="/pages/posts.html">Back to Feed</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main class="container">
+      <article>
+        <header>
+          <h1>Log In</h1>
+          <p>Access the community by signing in to your account.</p>
+        </header>
+        <form id="login-form" onsubmit="return false;">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" name="email" placeholder="name@example.com" required>
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" name="password" placeholder="Enter your password" minlength="8" required>
+          <fieldset>
+            <label>
+              <input type="checkbox" name="remember" value="true">
+              Remember me
+            </label>
+          </fieldset>
+          <button type="submit" role="button">Log In</button>
+        </form>
+        <footer>
+          <p>Need an account? <a href="/pages/signup.html">Create one now</a>.</p>
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>

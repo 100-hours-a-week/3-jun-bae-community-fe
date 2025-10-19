@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Community | Post Detail</title>
+    <link rel="stylesheet" href="../css/pico.min.css">
+    <style>
+      .post-meta-stats {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: var(--pico-muted-color);
+      }
+
+      .post-meta-stats strong {
+        color: var(--pico-contrast);
+        margin-right: 0.35rem;
+      }
+
+      .post-footer {
+        margin-top: 3rem;
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .post-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      #post-content p + p {
+        margin-top: 1.25rem;
+      }
+
+      .comment-list article {
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+        padding: 1.5rem;
+      }
+
+      .comment-list article + article {
+        margin-top: 1rem;
+      }
+
+      .comment-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .comment-empty {
+        padding: 2rem 1.5rem;
+        text-align: center;
+        color: var(--pico-muted-color);
+        border: 1px dashed var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="container">
+      <nav>
+        <ul>
+          <li><a href="/pages/posts.html"><strong>Community</strong></a></li>
+        </ul>
+        <ul>
+          <li><a href="/pages/posts.html" class="secondary">Back to Feed</a></li>
+          <li data-auth="user"><a id="post-edit-link" href="/pages/postedit.html" data-disabled="true">Edit Post</a></li>
+          <li data-auth="guest"><a href="/pages/login.html">Log In</a></li>
+          <li data-auth="guest"><a href="/pages/signup.html" class="secondary">Sign Up</a></li>
+          <li data-auth="user"><a href="#" class="secondary" data-action="logout" data-redirect="/pages/login.html">Log Out</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main class="container">
+      <article id="post-detail" aria-live="polite" aria-busy="true">
+        <header>
+          <p id="post-topic" class="contrast"></p>
+          <h1 id="post-title">게시글을 불러오는 중입니다…</h1>
+          <p id="post-meta"></p>
+        </header>
+        <figure id="post-figure" hidden>
+          <img id="post-image" src="" alt="Post illustration">
+          <figcaption id="post-figcaption"></figcaption>
+        </figure>
+        <div id="post-content"></div>
+        <footer class="post-footer">
+          <div class="post-meta-stats" aria-label="게시글 통계">
+            <span><strong>좋아요</strong> <span id="post-like-count">0</span></span>
+            <span><strong>조회수</strong> <span id="post-view-count">0</span></span>
+            <span><strong>댓글</strong> <span id="post-reply-count">0</span></span>
+          </div>
+          <div class="post-actions">
+            <button type="button" role="button" id="post-like-button" aria-pressed="false">좋아요</button>
+            <button type="button" class="secondary" role="button" id="post-bookmark-button">북마크</button>
+          </div>
+        </footer>
+      </article>
+      <section aria-labelledby="comments-heading" id="post-comments">
+        <header>
+          <h2 id="comments-heading">Comments</h2>
+          <p>Join the discussion below.</p>
+        </header>
+        <form id="comment-form">
+          <label for="comment-body">Add a comment</label>
+          <textarea id="comment-body" name="comment" rows="4" placeholder="Share your thoughts" required></textarea>
+          <button type="submit" role="button">Post Comment</button>
+        </form>
+        <div class="comment-list" id="comment-list">
+          <p class="comment-empty" id="comment-empty">등록된 댓글이 없습니다.</p>
+        </div>
+        <div class="grid" id="comment-pagination" hidden>
+          <button type="button" id="load-more-comments" class="secondary">댓글 더 보기</button>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="../js/auth.js"></script>
+    <script type="module" src="../js/post.js"></script>
+  </body>
+</html>

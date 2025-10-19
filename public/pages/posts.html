@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Community | Posts</title>
+    <link rel="stylesheet" href="../css/pico.min.css">
+    <style>
+      .toolbar {
+        margin-bottom: 2rem;
+      }
+
+      .post-meta-stats {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        color: var(--pico-muted-color);
+      }
+
+      .post-meta-stats strong {
+        color: var(--pico-contrast);
+        margin-right: 0.35rem;
+      }
+
+      .post-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1.25rem;
+      }
+
+      .empty-state {
+        padding: 3rem 1.5rem;
+        text-align: center;
+        color: var(--pico-muted-color);
+        border: 1px dashed var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="container">
+      <nav>
+        <ul>
+          <li><a href="/pages/posts.html"><strong>Community</strong></a></li>
+        </ul>
+        <ul>
+          <li data-auth="guest"><a href="/pages/login.html">Log In</a></li>
+          <li data-auth="guest"><a href="/pages/signup.html" class="secondary">Sign Up</a></li>
+          <li data-auth="user"><a href="/pages/postadd.html">Write Post</a></li>
+          <li data-auth="user">
+            <details role="list">
+              <summary aria-haspopup="listbox">
+                <span data-auth-nickname>Account</span>
+              </summary>
+              <ul role="listbox">
+                <li><a href="/pages/useredit.html">Edit Profile</a></li>
+                <li><a href="#" data-action="logout" data-redirect="/pages/login.html">Log Out</a></li>
+              </ul>
+            </details>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <main class="container">
+      <div class="grid toolbar" role="search">
+        <input type="search" id="post-search" name="query" placeholder="Search posts" aria-label="Search posts">
+        <select id="post-sort" name="sort" aria-label="Sort posts">
+          <option value="latest">Latest</option>
+          <option value="popular">Most Liked</option>
+          <option value="commented">Most Commented</option>
+        </select>
+      </div>
+      <section aria-live="polite" aria-busy="false" id="post-feed">
+        <header>
+          <h1>Community Feed</h1>
+          <p>Scroll to load more posts from the community.</p>
+        </header>
+        <div id="post-list" class="grid" data-state="loading">
+          <p class="empty-state" id="post-empty">게시글을 불러오는 중입니다…</p>
+        </div>
+        <div id="scroll-anchor" role="status" class="container" data-loading="false">
+          <progress id="post-loading-indicator" hidden>Loading more posts</progress>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="../js/auth.js"></script>
+    <script type="module" src="../js/posts.js"></script>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "community-fe",
+  "version": "1.0.0",
+  "description": "demo community project for study",
+  "keywords": [
+    "frontend"
+  ],
+  "homepage": "https://github.com/100-hours-a-week/3-jun-bae-community-fe#readme",
+  "bugs": {
+    "url": "https://github.com/100-hours-a-week/3-jun-bae-community-fe/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/100-hours-a-week/3-jun-bae-community-fe.git"
+  },
+  "license": "ISC",
+  "author": "jun",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "http-proxy-middleware": "^3.0.5"
+  }
+}
