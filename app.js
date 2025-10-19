@@ -22,7 +22,7 @@ app.use('/api', createProxyMiddleware({
 
     // 쿠키와 인증 흐름을 건드리지 않음 (SameSite=Lax로도 OK, same-origin이기 때문)
     // 필요 시 Path rewrite 가능
-    // pathRewrite: { '^/api': '/api' },
+    pathRewrite: { '^': '/api' },
 
     // 타임아웃/에러 핸들링
     proxyTimeout: 30_000,
