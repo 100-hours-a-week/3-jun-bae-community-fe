@@ -1,7 +1,7 @@
 // /assets/js/config/defaults.js
 const defaults = Object.freeze({
     APP_NAME: 'MyCommunity',
-    API_BASE: 'http://localhost:3000/api',
+    API_BASE: 'http://localhost:8080/api',
     TIMEOUT_MS: 10000,
 });
 

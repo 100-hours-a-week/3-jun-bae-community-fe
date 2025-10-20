@@ -15,7 +15,7 @@ app.listen(app.get('port'), () => {
     console.log(app.get('port'), '번 포트에서 대기 중');
 });
 
-// 백엔드 프록시 (스프링 부트: http://localhost:8080)
+// 백엔드 프록시 도메인 달라서 필요한 경우 사용 (스프링 부트: http://localhost:8080)
 app.use('/api', createProxyMiddleware({
     target: 'http://localhost:8080',
     changeOrigin: true,
