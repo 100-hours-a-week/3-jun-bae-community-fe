@@ -121,7 +121,7 @@ async function loadPost(postId) {
     const post = await response.json();
 
     if (titleInput) titleInput.value = post.title ?? "";
-    if (contentInput) contentInput.value = contentInput ?? "";
+    if (contentInput) contentInput.value = post.content ?? "";
   } catch (error) {
     console.error(error);
     alert(error.message);
