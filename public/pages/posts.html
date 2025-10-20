@@ -52,7 +52,7 @@
           <li data-auth="guest"><a href="/pages/signup.html" class="secondary">Sign Up</a></li>
           <li data-auth="user"><a href="/pages/postadd.html">Write Post</a></li>
           <li data-auth="user">
-            <details role="list">
+            <details class="dropdown">
               <summary aria-haspopup="listbox">
                 <span data-auth-nickname>Account</span>
               </summary>
@@ -79,11 +79,11 @@
           <h1>Community Feed</h1>
           <p>Scroll to load more posts from the community.</p>
         </header>
-        <div id="post-list" class="grid" data-state="loading">
-          <p class="empty-state" id="post-empty">게시글을 불러오는 중입니다…</p>
+        <div id="post-list" class="ㅣ" data-state="loading">
+          <p class="empty-state" id="post-empty">게시글이 없습니다.</p>
         </div>
         <div id="scroll-anchor" role="status" class="container" data-loading="false">
-          <progress id="post-loading-indicator" hidden>Loading more posts</progress>
+          <progress id="post-loading-indicator" hidden>게시글을 불러오는 중입니다.</progress>
         </div>
       </section>
     </main>

@@ -36,13 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      const content = buildContent({
-        summary,
-        content: contentInput,
-        tags,
-        coverImageUrl,
-        allowComments,
-      });
+      const content = contentInput;
 
       const response = await fetchWithTimeout(`${API_BASE}/posts`, {
         method: "POST",
@@ -70,25 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-function buildContent({ summary, content, tags, coverImageUrl, allowComments }) {
-  const parts = [];
-  if (!allowComments) {
-    parts.push("> 댓글이 비활성화된 게시글입니다.");
-  }
-  if (coverImageUrl) {
-    parts.push(`![cover image](${coverImageUrl})`);
-  }
-  if (summary) {
-    parts.push(summary);
-  }
-  if (content) {
-    parts.push(content);
-  }
-  if (tags) {
-    parts.push(`태그: ${tags}`);
-  }
-  return parts.join("\n\n");
-}
 
 async function uploadFile(file) {
   const body = new FormData();

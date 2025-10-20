@@ -32,10 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const fd = new FormData(form);
       const title = String(fd.get("title") ?? "").trim();
       const contentInput = String(fd.get("content") ?? "").trim();
-      const summary = String(fd.get("summary") ?? "").trim();
-      const tags = String(fd.get("tags") ?? "").trim();
-      const coverImageUrl = String(fd.get("coverImage") ?? "").trim();
-      const allowComments = fd.getAll("allowComments").includes("true");
 
       if (!title || !contentInput) {
         throw new Error("제목과 본문을 입력해주세요.");
@@ -43,13 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const payload = {
         title,
-        content: buildContent({
-          summary,
-          content: contentInput,
-          tags,
-          coverImageUrl,
-          allowComments,
-        }),
+        content: contentInput
       };
 
       const file = fileInput?.files?.[0];
@@ -113,10 +103,8 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadPost(postId) {
   const titleInput = document.getElementById("edit-title");
   const contentInput = document.getElementById("edit-content");
-  const summaryInput = document.getElementById("edit-summary");
-  const tagsInput = document.getElementById("edit-tags");
   const coverImageInput = document.getElementById("edit-image");
-  const allowCommentsInput = document.getElementById("edit-allow-comments");
+
 
   try {
     const response = await fetchWithTimeout(`${API_BASE}/posts/${postId}`, {
@@ -131,14 +119,9 @@ async function loadPost(postId) {
     }
 
     const post = await response.json();
-    const parsed = parsePostContent(post);
 
     if (titleInput) titleInput.value = post.title ?? "";
-    if (contentInput) contentInput.value = parsed.content ?? "";
-    if (summaryInput) summaryInput.value = parsed.summary ?? "";
-    if (tagsInput) tagsInput.value = parsed.tags ?? "";
-    if (coverImageInput) coverImageInput.value = parsed.coverImageUrl ?? "";
-    if (allowCommentsInput) allowCommentsInput.checked = parsed.allowComments;
+    if (contentInput) contentInput.value = contentInput ?? "";
   } catch (error) {
     console.error(error);
     alert(error.message);
@@ -146,81 +129,6 @@ async function loadPost(postId) {
   }
 }
 
-function buildContent({ summary, content, tags, coverImageUrl, allowComments }) {
-  const parts = [];
-  if (!allowComments) {
-    parts.push("> 댓글이 비활성화된 게시글입니다.");
-  }
-  if (coverImageUrl) {
-    parts.push(`![cover image](${coverImageUrl})`);
-  }
-  if (summary) {
-    parts.push(summary);
-  }
-  if (content) {
-    parts.push(content);
-  }
-  if (tags) {
-    parts.push(`태그: ${tags}`);
-  }
-  return parts.join("\n\n");
-}
-
-function parsePostContent(post) {
-  const result = {
-    allowComments: true,
-    summary: "",
-    content: post.content ?? "",
-    tags: "",
-    coverImageUrl: "",
-  };
-
-  let working = post.content ?? "";
-
-  if (!working.trim()) {
-    return result;
-  }
-
-  const commentNoteRegex = /^>\s*댓글이 비활성화된 게시글입니다\.\s*\n*/m;
-  if (commentNoteRegex.test(working)) {
-    result.allowComments = false;
-    working = working.replace(commentNoteRegex, "").trim();
-  }
-
-  if (Array.isArray(post.fileUrls) && post.fileUrls.length > 0) {
-    result.coverImageUrl = post.fileUrls[0];
-  } else {
-    const imageRegex = /!\[[^\]]*]\((.*?)\)\s*/;
-    const imageMatch = imageRegex.exec(working);
-    if (imageMatch) {
-      result.coverImageUrl = imageMatch[1];
-      working = working.replace(imageMatch[0], "").trim();
-    }
-  }
-
-  const tagRegex = /^태그:\s*(.+)$/m;
-  const tagMatch = tagRegex.exec(working);
-  if (tagMatch) {
-    result.tags = tagMatch[1].trim();
-    working = working.replace(tagMatch[0], "").trim();
-  }
-
-  const segments = working.split(/\n{2,}/).map((segment) => segment.trim()).filter(Boolean);
-  if (segments.length) {
-    if (segments.length > 1) {
-      result.summary = segments[0].slice(0, 240);
-      result.content = segments.slice(1).join("\n\n");
-    } else {
-      result.summary = "";
-      result.content = segments[0];
-    }
-  } else {
-    result.summary = "";
-    result.content = working;
-  }
-
-  return result;
-}
 
 async function uploadFile(file) {
   const body = new FormData();

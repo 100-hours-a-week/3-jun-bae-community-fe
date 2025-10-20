@@ -13,10 +13,22 @@
           <li><a href="/pages/posts.html"><strong>Community</strong></a></li>
         </ul>
         <ul>
+          <li><a href="/pages/posts.html" class="secondary">Back to Feed</a></li>
           <li data-auth="guest"><a href="/pages/login.html">Log In</a></li>
           <li data-auth="guest"><a href="/pages/signup.html" class="secondary">Sign Up</a></li>
-          <li><a id="edit-cancel-link" href="/pages/post.html" class="secondary">Cancel</a></li>
-          <li data-auth="user"><a href="#" data-action="logout" data-redirect="/pages/login.html">Log Out</a></li>
+        </ul>
+        <ul>
+          <li data-auth="user">
+            <details class="dropdown">
+              <summary aria-haspopup="listbox">
+                <span data-auth-nickname>Account</span>
+              </summary>
+              <ul role="listbox">
+                <li><a href="/pages/useredit.html">Edit Profile</a></li>
+                <li><a href="#" data-action="logout" data-redirect="/pages/login.html">Log Out</a></li>
+              </ul>
+            </details>
+          </li>
         </ul>
       </nav>
     </header>
@@ -29,10 +41,6 @@
         <form id="post-edit-form">
           <label for="edit-title">Title</label>
           <input type="text" id="edit-title" name="title" maxlength="150" required>
-          <label for="edit-tags">Tags</label>
-          <input type="text" id="edit-tags" name="tags" placeholder="Comma-separated tags">
-          <label for="edit-summary">Summary</label>
-          <textarea id="edit-summary" name="summary" rows="2" placeholder="Brief summary to show in the feed" maxlength="240"></textarea>
           <label for="edit-content">Content</label>
           <textarea id="edit-content" name="content" rows="12" placeholder="Update your post content" required></textarea>
           <label for="edit-image">Cover Image URL</label>

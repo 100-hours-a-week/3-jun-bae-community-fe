@@ -15,8 +15,19 @@
         <ul>
           <li data-auth="guest"><a href="/pages/login.html">Log In</a></li>
           <li data-auth="guest"><a href="/pages/signup.html" class="secondary">Sign Up</a></li>
-          <li><a href="/pages/posts.html" class="secondary">Cancel</a></li>
-          <li data-auth="user"><a href="#" data-action="logout" data-redirect="/pages/login.html">Log Out</a></li>
+        </ul>
+        <ul>
+          <li data-auth="user">
+            <details class="dropdown">
+              <summary aria-haspopup="listbox">
+                <span data-auth-nickname>Account</span>
+              </summary>
+              <ul role="listbox">
+                <li><a href="/pages/useredit.html">Edit Profile</a></li>
+                <li><a href="#" data-action="logout" data-redirect="/pages/login.html">Log Out</a></li>
+              </ul>
+            </details>
+          </li>
         </ul>
       </nav>
     </header>
@@ -29,22 +40,10 @@
         <form id="post-create-form">
           <label for="post-title">Title</label>
           <input type="text" id="post-title" name="title" placeholder="Catchy headline" maxlength="150" required>
-          <label for="post-tags">Tags</label>
-          <input type="text" id="post-tags" name="tags" placeholder="Comma-separated tags">
-          <label for="post-summary">Summary</label>
-          <textarea id="post-summary" name="summary" rows="2" placeholder="Brief summary to show in the feed" maxlength="240"></textarea>
           <label for="post-content">Content</label>
           <textarea id="post-content" name="content" rows="12" placeholder="Write your post here" required></textarea>
-          <label for="post-image">Cover Image URL</label>
-          <input type="url" id="post-image" name="coverImage" placeholder="https://example.com/image.jpg">
           <label for="post-image-file">Upload Cover Image</label>
           <input type="file" id="post-image-file" name="coverImageFile" accept="image/*">
-          <fieldset>
-            <label>
-              <input type="checkbox" name="allowComments" value="true" checked>
-              Allow comments on this post
-            </label>
-          </fieldset>
           <div class="grid">
             <button type="submit" role="button" id="post-submit-button">Publish</button>
             <button type="reset" class="secondary" role="button">Clear</button>
