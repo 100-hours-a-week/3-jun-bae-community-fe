@@ -1,4 +1,4 @@
-import { API_BASE } from "./defaults.js";
+import { API_BASE } from "./core/defaults.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const signupForm = document.getElementById("signup-form");

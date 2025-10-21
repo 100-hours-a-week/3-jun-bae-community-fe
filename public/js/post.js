@@ -1,4 +1,4 @@
-import { API_BASE, TIMEOUT_MS } from "./defaults.js";
+import { API_BASE, TIMEOUT_MS } from "./core/defaults.js";
 
 const BOOKMARK_KEY = "community:bookmarks";
 const COMMENT_PAGE_SIZE = 10;
