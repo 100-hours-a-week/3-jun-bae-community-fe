@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Community | Post Detail</title>
     <link rel="stylesheet" href="../css/pico.min.css">
+    <script src="../js/core/layout.js"></script>
     <style>
       .post-meta-stats {
         display: flex;
@@ -61,20 +62,6 @@
     </style>
   </head>
   <body>
-    <header class="container">
-      <nav>
-        <ul>
-          <li><a href="/pages/posts.html"><strong>Community</strong></a></li>
-        </ul>
-        <ul>
-          <li><a href="/pages/posts.html" class="secondary">Back to Feed</a></li>
-          <li data-auth="user"><a id="post-edit-link" href="/pages/postedit.html" data-disabled="true">Edit Post</a></li>
-          <li data-auth="guest"><a href="/pages/login.html">Log In</a></li>
-          <li data-auth="guest"><a href="/pages/signup.html" class="secondary">Sign Up</a></li>
-          <li data-auth="user"><a href="#" class="secondary" data-action="logout" data-redirect="/pages/login.html">Log Out</a></li>
-        </ul>
-      </nav>
-    </header>
     <main class="container">
       <article id="post-detail" aria-live="polite" aria-busy="true">
         <header>
@@ -96,6 +83,8 @@
           <div class="post-actions">
             <button type="button" role="button" id="post-like-button" aria-pressed="false">좋아요</button>
             <button type="button" class="secondary" role="button" id="post-bookmark-button">북마크</button>
+            <button type="button" id="post-edit-link" style="margin-left: auto;" href="/pages/postedit.html" hidden="true">Edit Post</button>
+
           </div>
         </footer>
       </article>
@@ -106,7 +95,7 @@
         </header>
         <form id="comment-form">
           <label for="comment-body">Add a comment</label>
-          <textarea id="comment-body" name="comment" rows="4" placeholder="Share your thoughts" required></textarea>
+          <textarea id="comment-body" name="comment" rows="4" placeholder="댓글은 최대 150자까지 작성할 수 있습니다." required maxlength="150"></textarea>
           <button type="submit" role="button">Post Comment</button>
         </form>
         <div class="comment-list" id="comment-list">
@@ -117,7 +106,7 @@
         </div>
       </section>
     </main>
-    <script type="module" src="../js/auth.js"></script>
+    <script type="module" src="../js/core/auth.js"></script>
     <script type="module" src="../js/post.js"></script>
   </body>
 </html>

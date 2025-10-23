@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Community | Posts</title>
     <link rel="stylesheet" href="../css/pico.min.css">
+    <script src="../js/core/layout.js"></script>
     <style>
       .toolbar {
         margin-bottom: 2rem;
@@ -39,32 +40,23 @@
         border: 1px dashed var(--pico-muted-border-color);
         border-radius: var(--pico-border-radius);
       }
+
+      .parent {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: 1fr;
+        grid-column-gap: 0px;
+        grid-row-gap: 0px;
+
+        align-items: end;
+      }
+      .parent > * {
+        margin-bottom: 1rem;
+      }
     </style>
   </head>
   <body>
-    <header class="container">
-      <nav>
-        <ul>
-          <li><a href="/pages/posts.html"><strong>Community</strong></a></li>
-        </ul>
-        <ul>
-          <li data-auth="guest"><a href="/pages/login.html">Log In</a></li>
-          <li data-auth="guest"><a href="/pages/signup.html" class="secondary">Sign Up</a></li>
-          <li data-auth="user"><a href="/pages/postadd.html">Write Post</a></li>
-          <li data-auth="user">
-            <details class="dropdown">
-              <summary aria-haspopup="listbox">
-                <span data-auth-nickname>Account</span>
-              </summary>
-              <ul role="listbox">
-                <li><a href="/pages/useredit.html">Edit Profile</a></li>
-                <li><a href="#" data-action="logout" data-redirect="/pages/login.html">Log Out</a></li>
-              </ul>
-            </details>
-          </li>
-        </ul>
-      </nav>
-    </header>
+    
     <main class="container">
       <div class="grid toolbar" role="search">
         <input type="search" id="post-search" name="query" placeholder="Search posts" aria-label="Search posts">
@@ -76,8 +68,11 @@
       </div>
       <section aria-live="polite" aria-busy="false" id="post-feed">
         <header>
-          <h1>Community Feed</h1>
-          <p>Scroll to load more posts from the community.</p>
+          <h1 style="margin: 0px">Community Feed</h1>
+          <div class="grid parent">
+            <p>Scroll to load more posts from the community.</p>
+            <a href="/pages/postadd.html" role="button" class="primary small">Write a New Post</a>
+          </div>
         </header>
         <div id="post-list" class="ㅣ" data-state="loading">
           <p class="empty-state" id="post-empty">게시글이 없습니다.</p>
@@ -87,7 +82,7 @@
         </div>
       </section>
     </main>
-    <script type="module" src="../js/auth.js"></script>
+    <script type="module" src="../js/core/auth.js"></script>
     <script type="module" src="../js/posts.js"></script>
   </body>
 </html>

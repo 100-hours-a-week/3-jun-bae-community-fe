@@ -5,21 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Community | Edit Profile</title>
     <link rel="stylesheet" href="../css/pico.min.css">
+    <script src="../js/core/layout.js"></script>
   </head>
   <body>
-    <header class="container">
-      <nav>
-        <ul>
-          <li><a href="/pages/posts.html"><strong>Community</strong></a></li>
-        </ul>
-        <ul>
-          <li><a href="/pages/posts.html" class="secondary">Back to Feed</a></li>
-          <li data-auth="guest"><a href="/pages/login.html">Log In</a></li>
-          <li data-auth="guest"><a href="/pages/signup.html" class="secondary">Sign Up</a></li>
-          <li data-auth="user"><a href="#" data-action="logout" data-redirect="/pages/login.html">Log Out</a></li>
-        </ul>
-      </nav>
-    </header>
     <main class="container">
       <article>
         <header>
@@ -27,14 +15,14 @@
           <p>Update your personal information to keep your profile current.</p>
         </header>
         <form id="profile-form">
-          <label for="profile-image-url">Profile Image URL</label>
-          <input type="url" id="profile-image-url" name="profileImageUrl" placeholder="https://example.com/avatar.png">
+          <img id="profile-image-preview" src="../images/default-profile.png" alt="Profile Image Preview" width="150" height="150">
           <label for="profile-image-file">Upload New Profile Image</label>
           <input type="file" id="profile-image-file" name="profileImageFile" accept="image/*">
-          <label for="profile-nickname">Nickname</label>
-          <input type="text" id="profile-nickname" name="nickname" maxlength="20" placeholder="닉네임" required>
           <label for="profile-email">Email</label>
           <input type="email" id="profile-email" name="email" placeholder="name@example.com" required>
+          <label for="profile-nickname">Nickname</label>
+          <input type="text" id="profile-nickname" name="nickname" maxlength="20" placeholder="닉네임" required>
+          
           <div class="grid">
             <button type="submit" role="button" id="profile-submit-button">Save Changes</button>
             <button type="button" class="secondary" role="button" id="profile-delete-button">Delete Account</button>
@@ -43,7 +31,7 @@
       </article>
     </main>
     <script type="module" src="../js/useredit.js"></script>
-    <script type="module" src="../js/auth.js"></script>
+    <script type="module" src="../js/core/auth.js"></script>
     <script type="module" src="../js/useredit.js"></script>
   </body>
 </html>

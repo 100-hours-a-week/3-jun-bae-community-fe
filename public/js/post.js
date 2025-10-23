@@ -1,4 +1,5 @@
 import { API_BASE, TIMEOUT_MS } from "./core/defaults.js";
+import { getSessionUser } from "./core/session.js";
 
 const BOOKMARK_KEY = "community:bookmarks";
 const COMMENT_PAGE_SIZE = 10;
@@ -20,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const replyCountEl = document.getElementById("post-reply-count");
   const likeButton = document.getElementById("post-like-button");
   const bookmarkButton = document.getElementById("post-bookmark-button");
-  const editLink = document.getElementById("post-edit-link");
+  const editLinkButton = document.getElementById("post-edit-link");
 
   const commentForm = document.getElementById("comment-form");
   const commentBodyInput = document.getElementById("comment-body");
@@ -43,25 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
   init();
 
   async function init() {
-    await Promise.allSettled([loadCurrentUser(), loadPost()]);
+    await Promise.allSettled([loadPost()]);
     await loadComments();
     initBookmarkState();
-  }
-
-  async function loadCurrentUser() {
-    try {
-      const response = await fetchWithTimeout(`${API_BASE}/users/me`, {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        timeout: TIMEOUT_MS,
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      currentUserId = data.id;
-    } catch (error) {
-      console.info("현재 로그인 정보를 불러오지 못했습니다.", error);
-    }
   }
 
   async function loadPost() {
@@ -177,9 +162,9 @@ document.addEventListener("DOMContentLoaded", () => {
       postFigure.hidden = true;
     }
 
-    if (editLink) {
-      editLink.href = `/pages/postedit.html?postId=${post.id}`;
-      editLink.removeAttribute("data-disabled");
+    // Show edit link only if current user is the author
+    if (editLinkButton && post.author.id === getSessionUser()?.id) {
+      editLinkButton.removeAttribute("hidden");
     }
 
     likeButton?.addEventListener("click", handleLikeToggle);

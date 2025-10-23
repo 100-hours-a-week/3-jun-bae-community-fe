@@ -6,6 +6,7 @@
     <title>3-jun Bae Community</title>
     <meta name="description" content="3-jun Bae 커뮤니티에 합류해 최신 소식을 나누고 관심사를 공유하세요.">
     <link rel="stylesheet" href="./css/pico.min.css">
+    <script src="../js/core/layout.js"></script>
     <style>
         :root {
             --brand-gradient: linear-gradient(135deg, var(--pico-primary), var(--pico-secondary));
@@ -129,21 +130,6 @@
     </style>
 </head>
 <body>
-    <header>
-        <nav class="container">
-            <ul>
-                <li><a href="./index.html" class="contrast"><strong>3-jun Bae Community</strong></a></li>
-            </ul>
-            <ul>
-                <li><a href="./pages/posts.html">커뮤니티</a></li>
-                <li data-auth="guest"><a href="./pages/login.html">로그인</a></li>
-                <li data-auth="guest"><a href="./pages/signup.html" role="button" class="secondary">회원가입</a></li>
-                <li data-auth="user"><a href="./pages/useredit.html">내 프로필</a></li>
-                <li data-auth="user"><a href="#" data-action="logout" data-redirect="/index.html" class="secondary">로그아웃</a></li>
-            </ul>
-        </nav>
-    </header>
-
     <main>
         <section class="hero container" id="home">
             <p class="contrast">함께 성장하는 실전 커뮤니티</p>
@@ -204,12 +190,6 @@
             </div>
         </section>
     </main>
-
-    <footer>
-        <small>© 2025 3-jun Bae Community · Kakao Boot Camp</small>
-    </footer>
-
-    <script type="module" src="./js/auth.js"></script>
-    <script src="./js/script.js" type="module"></script>
 </body>
+<script type="module" src="./js/core/auth.js"></script>
 </html>

@@ -1,5 +1,5 @@
-import { API_BASE } from "./defaults.js";
-import { ensureSession, isAuthenticated, saveSession } from "./session.js";
+import { API_BASE } from "./core/defaults.js";
+import { ensureSession, isAuthenticated, saveSession } from "./core/session.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   await ensureSession();

@@ -1,4 +1,4 @@
-import { API_BASE, TIMEOUT_MS } from "./defaults.js";
+import { API_BASE, TIMEOUT_MS } from "./core/defaults.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("post-create-form");

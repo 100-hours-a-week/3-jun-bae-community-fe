@@ -1,5 +1,5 @@
 import { API_BASE, TIMEOUT_MS } from "./defaults.js";
-
+// 세션 관리와 인증 상태 확인을 위한 유틸리티 함수들
 export const SESSION_UPDATED_EVENT = "session:updated";
 export const SESSION_CLEARED_EVENT = "session:cleared";
 

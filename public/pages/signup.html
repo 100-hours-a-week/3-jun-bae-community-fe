@@ -5,22 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Community | Sign Up</title>
     <link rel="stylesheet" href="../css/pico.min.css">
-    <script type="module" src="../js/defaults.js"></script>
-    <script type="module" src="../js/auth.js"></script>
+    <script src="../js/core/layout.js"></script>
+    <script type="module" src="../js/core/defaults.js"></script>
+    <!-- <script type="module" src="../js/core/auth.js"></script> -->
     <script type="module" src="../js/signup.js"></script>
   </head>
   <body>
-    <header class="container">
-      <nav>
-        <ul>
-          <li><strong>Community</strong></li>
-        </ul>
-        <ul>
-          <li data-auth="guest"><a href="/pages/login.html" class="secondary">Log In</a></li>
-          <li data-auth="user"><a href="/pages/posts.html">Back to Feed</a></li>
-        </ul>
-      </nav>
-    </header>
     <main class="container">
       <article>
         <header>
@@ -40,7 +30,7 @@
           <fieldset>
             <label>
               <input type="checkbox" name="terms" required>
-              I agree to the terms of service.
+              I agree to the <a href="/pages/terms.html">terms of service</a>.
             </label>
           </fieldset>
           <button type="submit" role="button">Create Account</button>

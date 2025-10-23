@@ -1,4 +1,4 @@
-// /assets/js/config/defaults.js
+// /assets/js/config/core/defaults.js
 const defaults = Object.freeze({
     APP_NAME: 'MyCommunity',
     API_BASE: 'http://localhost:8080/api',

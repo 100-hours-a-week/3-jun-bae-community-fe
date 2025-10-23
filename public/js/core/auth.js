@@ -6,6 +6,7 @@ import {
   SESSION_CLEARED_EVENT,
   SESSION_UPDATED_EVENT,
 } from "./session.js";
+// session 관리 와 session 정보에 따른 UI 업데이트 처리
 
 const logoutHandlers = new WeakSet();
 
