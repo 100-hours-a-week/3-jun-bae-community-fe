@@ -6,6 +6,15 @@
     <title>Community | Edit Profile</title>
     <link rel="stylesheet" href="../css/pico.min.css">
     <script src="../js/core/layout.js"></script>
+    <style>
+      #profile-image-preview {
+        display: block;
+        margin-bottom: 1rem;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: auto;
+      }
+    </style>
   </head>
   <body>
     <main class="container">
@@ -15,9 +24,12 @@
           <p>Update your personal information to keep your profile current.</p>
         </header>
         <form id="profile-form">
-          <img id="profile-image-preview" src="../images/default-profile.png" alt="Profile Image Preview" width="150" height="150">
-          <label for="profile-image-file">Upload New Profile Image</label>
-          <input type="file" id="profile-image-file" name="profileImageFile" accept="image/*">
+          <div class="profile-image-section">
+            <img id="profile-image-preview" src="/icon/default-profile-icon.jpg" alt="Profile Image Preview" width="150" height="150">
+            <label for="profile-image-file">Upload New Profile Image</label>
+            <input type="file" id="profile-image-file" name="profileImageFile" accept="image/*">
+          </div>
+
           <label for="profile-email">Email</label>
           <input type="email" id="profile-email" name="email" placeholder="name@example.com" required>
           <label for="profile-nickname">Nickname</label>
@@ -31,7 +43,7 @@
       </article>
     </main>
     <script type="module" src="../js/useredit.js"></script>
-    <script type="module" src="../js/core/auth.js"></script>
+    <script type="module" src="../js/auth.js"></script>
     <script type="module" src="../js/useredit.js"></script>
   </body>
 </html>

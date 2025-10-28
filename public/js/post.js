@@ -37,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   let likedState = false;
-  let currentUserId = null;
   let commentPage = 0;
   let commentsTotalPages = 0;
 
@@ -45,8 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function init() {
     await Promise.allSettled([loadPost()]);
-    await loadComments();
+    loadComments();
     initBookmarkState();
+    loadLikeState();
   }
 
   async function loadPost() {
@@ -70,6 +70,29 @@ document.addEventListener("DOMContentLoaded", () => {
       disableInteractions();
     } finally {
       postDetail?.setAttribute("aria-busy", "false");
+    }
+  }
+
+  async function loadLikeState() {
+    try {
+      const response = await fetchWithTimeout(`${API_BASE}/posts/${postId}/likes`, {
+        method: "GET",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        timeout: TIMEOUT_MS,
+      });
+
+      if (!response.ok) {
+        throw new Error("좋아요 상태를 불러오지 못했습니다.");
+      }
+
+      const payload = await response.json();
+      likedState = Boolean(payload.liked);
+      if (likedState === true) {
+        updateLikeButton();
+      }
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -119,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updateCommentPagination();
     } catch (error) {
       console.error(error);
-      alert(error.message);
+
     }
   }
 
@@ -163,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Show edit link only if current user is the author
-    if (editLinkButton && post.author.id === getSessionUser()?.id) {
+    if (editLinkButton && post.author?.id === getSessionUser()?.id) {
       editLinkButton.removeAttribute("hidden");
     }
 
@@ -193,6 +216,9 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("좋아요는 로그인이 필요합니다.");
+        }
         throw new Error(likedState ? "좋아요 취소에 실패했습니다." : "좋아요에 실패했습니다.");
       }
 
@@ -202,7 +228,6 @@ document.addEventListener("DOMContentLoaded", () => {
       updateLikeButton();
     } catch (error) {
       console.error(error);
-      alert(error.message);
     } finally {
       likeButton.disabled = false;
     }
@@ -237,7 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
       replyCountEl.textContent = formatNumber(parseNumber(replyCountEl.textContent) + 1);
     } catch (error) {
       console.error(error);
-      alert(error.message);
     } finally {
       const submitControl = commentForm?.querySelector("button[type='submit']");
       submitControl && (submitControl.disabled = false);
@@ -302,7 +326,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      if (isUnloading || error?.name === "AbortError") return;
+      
     }
   }
 
@@ -330,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
       replyCountEl.textContent = formatNumber(Math.max(parseNumber(replyCountEl.textContent) - 1, 0));
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      
     }
   }
 
@@ -362,8 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     article.appendChild(header);
     article.appendChild(body);
-
-    if (currentUserId && comment.authorId === currentUserId) {
+    if (getSessionUser()?.id && comment.authorId === getSessionUser()?.id) {
       const actions = document.createElement("div");
       actions.className = "comment-actions";
       const editButton = document.createElement("button");
