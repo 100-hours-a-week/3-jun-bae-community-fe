@@ -1,3 +1,4 @@
+
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
@@ -8,6 +9,30 @@ app.set('port', process.env.PORT || 3000);
 app.get('/', (req, res) => {
     res.redirect('/index.html');
 });
+
+const DEFAULT_CONFIG = Object.freeze({
+    APP_NAME: 'MyCommunity',
+    API_BASE: 'https://api.community.junbeom.site/api',
+    TIMEOUT_MS: 10_000,
+});
+
+app.get('/js/core/defaults.js', (req, res) => {
+    const timeout = Number.parseInt(process.env.TIMEOUT_MS ?? '', 10);
+    const config = {
+        APP_NAME: process.env.APP_NAME || DEFAULT_CONFIG.APP_NAME,
+        API_BASE: process.env.API_BASE || DEFAULT_CONFIG.API_BASE,
+        TIMEOUT_MS: Number.isFinite(timeout) ? timeout : DEFAULT_CONFIG.TIMEOUT_MS,
+    };
+
+    // Serve defaults.js with environment overrides without mutating the static asset on disk.
+    const script = `const defaults = Object.freeze(${JSON.stringify(config, null, 4)});
+
+export const { APP_NAME, API_BASE, TIMEOUT_MS } = defaults;
+`;
+
+    res.type('application/javascript').send(script);
+});
+
 app.use(express.static('public'));
 app.use(express.static('assets'));
 
