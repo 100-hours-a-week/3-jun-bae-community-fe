@@ -46,7 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
     await Promise.allSettled([loadPost()]);
     loadComments();
     initBookmarkState();
-    loadLikeState();
+    if(!getSessionUser()) return;
+    loadLikeState(); // 로그인 상태인 유저만 호출
   }
 
   async function loadPost() {
@@ -254,6 +255,9 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       if (!response.ok) {
+        if( response.status === 401) {
+          throw new Error("댓글 작성은 로그인이 필요합니다.");
+        }
         throw new Error("댓글 등록에 실패했습니다.");
       }
 
@@ -261,6 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await loadComments(0, false);
       replyCountEl.textContent = formatNumber(parseNumber(replyCountEl.textContent) + 1);
     } catch (error) {
+      alert(error.message);
       console.error(error);
     } finally {
       const submitControl = commentForm?.querySelector("button[type='submit']");
@@ -326,8 +331,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (error) {
       console.error(error);
-      if (isUnloading || error?.name === "AbortError") return;
-      
+      alert(error.message);
     }
   }
 
