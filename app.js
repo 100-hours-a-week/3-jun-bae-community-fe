@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config(); // 이미 환경변수가 있을 경우 덮어쓰지 않음
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
