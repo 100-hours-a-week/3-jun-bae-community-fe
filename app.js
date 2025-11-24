@@ -24,7 +24,6 @@ app.get('/js/core/defaults.js', (req, res) => {
         TIMEOUT_MS: Number.isFinite(timeout) ? timeout : DEFAULT_CONFIG.TIMEOUT_MS,
     };
 
-    // Serve defaults.js with environment overrides without mutating the static asset on disk.
     const script = `const defaults = Object.freeze(${JSON.stringify(config, null, 4)});
 
 export const { APP_NAME, API_BASE, TIMEOUT_MS } = defaults;
@@ -36,20 +35,11 @@ export const { APP_NAME, API_BASE, TIMEOUT_MS } = defaults;
 app.use(express.static('public'));
 app.use(express.static('assets'));
 
-app.listen(app.get('port'), () => {
-    console.log(app.get('port'), '번 포트에서 대기 중');
-});
-
 // 백엔드 프록시 도메인 달라서 필요한 경우 사용 (스프링 부트: http://localhost:8080)
 app.use('/pages', createProxyMiddleware({
     target: process.env.BACKEND_HOST,
     changeOrigin: true,
-
-    // 쿠키와 인증 흐름을 건드리지 않음 (SameSite=Lax로도 OK, same-origin이기 때문)
-    // 필요 시 Path rewrite 가능
     pathRewrite: { '^': '/pages' },
-
-    // 타임아웃/에러 핸들링
     proxyTimeout: 30_000,
     onError(err, req, res) {
         console.error('Proxy error:', err?.message);
@@ -58,3 +48,11 @@ app.use('/pages', createProxyMiddleware({
         }
     },
 }));
+
+if (require.main === module) {
+    app.listen(app.get('port'), () => {
+        console.log(app.get('port'), '번 포트에서 대기 중');
+    });
+}
+
+module.exports = app;
