@@ -129,6 +129,10 @@ document.addEventListener("DOMContentLoaded", () => {
       nicknameInput && (nicknameInput.value = profile.nickname ?? "");
       emailInput && (emailInput.value = profile.email ?? "");
       profileImageInput && (profileImageInput.value = profile.profileImageUrl ?? "");
+      const profileImagePreview = document.getElementById("profile-image-preview");
+      if (profileImagePreview) {
+        profileImagePreview.src = profile.profileImageUrl || "/assets/icon/default-profile-icon.jpg";
+      }
     } catch (error) {
       console.error(error);
       alert(error.message);

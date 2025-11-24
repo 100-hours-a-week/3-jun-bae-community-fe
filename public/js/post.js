@@ -47,6 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
     await Promise.allSettled([loadPost()]);
     await loadComments();
     initBookmarkState();
+    if(!getSessionUser()) return;
+    loadLikeState(); // 로그인 상태인 유저만 호출
   }
 
   async function loadPost() {
