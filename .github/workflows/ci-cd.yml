@@ -50,7 +50,7 @@ jobs:
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/community-fe:latest
+        tags: ${{ vars.DOCKER_HUB_USERNAME }}/community-fe:latest
   
   deploy:
     needs: build-and-push-image
@@ -99,6 +99,6 @@ jobs:
               "docker run -d --name community-fe \
               --restart unless-stopped -p 3000:3000 \
               -e NODE_ENV=production \
-              ${{ secrets.DOCKER_HUB_USERNAME }}/community-fe:latest"
+              ${{ vars.DOCKER_HUB_USERNAME }}/community-fe:latest"
             ]' \
             --output text
