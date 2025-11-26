@@ -1,0 +1,186 @@
+name: Node.js CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x, 24.x]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6.0.0
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run tests
+      run: npm test
+
+  build-and-push-image:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # 배포 작업은 main 브랜치에 푸시될 때만 실행
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6.0.0
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_IAM_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_IAM_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-2
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build and Push Docker image to Amazon ECR
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:${{ github.sha }}
+          ${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:latest
+        cache-from: type=registry,ref=${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:buildcache # 빌드 캐시를 레지스트리에 저장
+        cache-to: type=registry,ref=${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:buildcache,mode=ma
+
+  
+  deploy:
+    needs: build-and-push-image
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # 배포 작업은 main 브랜치에 푸시될 때만 실행
+
+    env:
+      REGISTRY: ${{ secrets.REGISTRY }}
+      REPOSITORY: ${{ vars.REPOSITORY }}
+      AWS_EC2_INSTANCE_ID: ${{ secrets.AWS_EC2_INSTANCE_ID }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_IAM_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_IAM_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Install Session Manager Plugin for AWS CLI
+        run: |
+          ARCH=$(uname -m | tr '[:upper:]' '[:lower:]')
+          case "$ARCH" in
+            x86_64|amd64)
+              PKG_PATH="https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb"
+              ;;
+            arm64|aarch64)
+              PKG_PATH="https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_arm64/session-manager-plugin.deb"
+              ;;
+            *)
+              echo "Unsupported architecture: $ARCH" >&2
+              exit 1
+              ;;
+          esac
+
+          curl -fsSL "$PKG_PATH" -o session-manager-plugin.deb
+          sudo DEBIAN_FRONTEND=noninteractive dpkg -i session-manager-plugin.deb
+      
+
+      - name: Check Docker Installation
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${AWS_EC2_INSTANCE_ID}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=["command -v docker"]' \
+            --query 'Command.CommandId' \
+            --output text)
+
+          echo "⏳ Checking Docker installation..."
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}"
+
+          OUTPUT=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}" \
+            --query 'StandardOutputContent' \
+            --output text)
+
+          if [ -z "$OUTPUT" ]; then
+            echo "Error: Docker is not installed on the EC2 instance" >&2
+            exit 1
+          fi
+
+          echo "✅ Docker is installed: $OUTPUT"
+
+      - name: Deploy via SSM
+        run: |
+          DOCKER_IMAGE="${REGISTRY}/${REPOSITORY}:latest"
+
+          DEPLOY_COMMANDS="[
+            \"docker rm -f community-fe || true\",
+            \"docker pull ${DOCKER_IMAGE}\",
+            \"docker run -d --name community-fe --restart unless-stopped -p 3000:3000 -e NODE_ENV=production ${DOCKER_IMAGE}\"
+          ]"
+
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${AWS_EC2_INSTANCE_ID}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=${DEPLOY_COMMANDS}" \
+            --query 'Command.CommandId' \
+            --output text)
+
+          echo "⏳ Deploying application..."
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}"
+
+          OUTPUT=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}" \
+            --query 'StandardOutputContent' \
+            --output text)
+
+          STATUS=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}" \
+            --query 'Status' \
+            --output text)
+
+          echo "Deployment Output:"
+          echo "$OUTPUT"
+
+          if [ "$STATUS" != "Success" ]; then
+            ERROR=$(aws ssm get-command-invocation \
+              --command-id "$COMMAND_ID" \
+              --instance-id "${AWS_EC2_INSTANCE_ID}" \
+              --query 'StandardErrorContent' \
+              --output text)
+            echo "Error: Deployment failed with status: $STATUS" >&2
+            echo "Error Details: $ERROR" >&2
+            exit 1
+          fi
+
+          echo "✅ Deployment completed successfully!"
+            
