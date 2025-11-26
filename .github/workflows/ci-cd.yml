@@ -57,19 +57,15 @@ jobs:
 
     - name: Build and Push Docker image to Amazon ECR
       uses: docker/build-push-action@v6
-      env:
-        REGISTRY: ${{ secrets.REGISTRY }}
-        REPOSITORY: ${{ vars.REPOSITORY }}
       with:
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          $REGISTRY/$REPOSITORY:${{ github.sha }}
-          $REGISTRY/$REPOSITORY:latest
-
-        cache-from: type=registry,ref=$REGISTRY/$REPOSITORY:buildcache # 빌드 캐시를 레지스트리에 저장
-        cache-to: type=registry,ref=$REGISTRY/$REPOSITORY:buildcache,mode=ma
+          ${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:${{ github.sha }}
+          ${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:latest
+        cache-from: type=registry,ref=${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:buildcache # 빌드 캐시를 레지스트리에 저장
+        cache-to: type=registry,ref=${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:buildcache,mode=ma
 
   
   deploy:
