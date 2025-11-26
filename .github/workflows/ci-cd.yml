@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
 
 jobs:
   test:
@@ -33,6 +33,7 @@ jobs:
   build-and-push-image:
     needs: test
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # 배포 작업은 main 브랜치에 푸시될 때만 실행
 
     steps:
     - name: Checkout repository
@@ -71,7 +72,7 @@ jobs:
   deploy:
     needs: build-and-push-image
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # 배포 작업은 main 브랜치에 푸시될 때만 실행
 
     env:
       REGISTRY: ${{ secrets.REGISTRY }}
