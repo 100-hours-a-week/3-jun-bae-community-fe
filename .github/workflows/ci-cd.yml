@@ -17,32 +17,39 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6.0.0
+
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
     - name: Install dependencies
-      run: npm install
+      run: npm ci
+
     - name: Run tests
       run: npm test
 
   build-and-push-image:
     needs: test
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6.0.0
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ vars.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v6
@@ -51,10 +58,18 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: ${{ vars.DOCKER_HUB_USERNAME }}/community-fe:latest
+        cache-from: type=registry,ref=${{ vars.DOCKER_HUB_USERNAME }}/community-fe:buildcache
+        cache-to: type=registry,ref=${{ vars.DOCKER_HUB_USERNAME }}/community-fe:buildcache,mode=max
   
   deploy:
     needs: build-and-push-image
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    env:
+      DOCKER_HUB_USERNAME: ${{ vars.DOCKER_HUB_USERNAME }}
+      AWS_EC2_INSTANCE_ID: ${{ secrets.AWS_EC2_INSTANCE_ID }}
+
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -82,23 +97,92 @@ jobs:
           curl -fsSL "$PKG_PATH" -o session-manager-plugin.deb
           sudo DEBIAN_FRONTEND=noninteractive dpkg -i session-manager-plugin.deb
       
+      - name: Verify Environment Variables
+        run: |
+          if [ -z "${DOCKER_HUB_USERNAME}" ]; then
+            echo "Error: DOCKER_HUB_USERNAME is not configured." >&2
+            exit 1
+          fi
+          if [ -z "${AWS_EC2_INSTANCE_ID}" ]; then
+            echo "Error: AWS_EC2_INSTANCE_ID is not configured." >&2
+            exit 1
+          fi
+          echo "Environment variables verified successfully"
+
       - name: Check Docker Installation
         run: |
-          aws ssm send-command \
-            --instance-ids ${{ secrets.AWS_EC2_INSTANCE_ID }} \
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${AWS_EC2_INSTANCE_ID}" \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=["command -v docker"]' \
-            --output text
+            --query 'Command.CommandId' \
+            --output text)
+
+          echo "⏳ Checking Docker installation..."
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}"
+
+          OUTPUT=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}" \
+            --query 'StandardOutputContent' \
+            --output text)
+
+          if [ -z "$OUTPUT" ]; then
+            echo "Error: Docker is not installed on the EC2 instance" >&2
+            exit 1
+          fi
+
+          echo "✅ Docker is installed: $OUTPUT"
 
       - name: Deploy via SSM
         run: |
-          aws ssm send-command \
-            --instance-ids ${{ secrets.AWS_EC2_INSTANCE_ID }} \
+          DOCKER_IMAGE="${DOCKER_HUB_USERNAME}/community-fe:latest"
+
+          DEPLOY_COMMANDS="[
+            \"docker rm -f community-fe || true\",
+            \"docker pull ${DOCKER_IMAGE}\",
+            \"docker run -d --name community-fe --restart unless-stopped -p 3000:3000 -e NODE_ENV=production ${DOCKER_IMAGE}\"
+          ]"
+
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${AWS_EC2_INSTANCE_ID}" \
             --document-name "AWS-RunShellScript" \
-            --parameters 'commands=[
-              "docker run -d --name community-fe \
-              --restart unless-stopped -p 3000:3000 \
-              -e NODE_ENV=production \
-              ${{ vars.DOCKER_HUB_USERNAME }}/community-fe:latest"
-            ]' \
-            --output text
+            --parameters "commands=${DEPLOY_COMMANDS}" \
+            --query 'Command.CommandId' \
+            --output text)
+
+          echo "⏳ Deploying application..."
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}"
+
+          OUTPUT=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}" \
+            --query 'StandardOutputContent' \
+            --output text)
+
+          STATUS=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}" \
+            --query 'Status' \
+            --output text)
+
+          echo "Deployment Output:"
+          echo "$OUTPUT"
+
+          if [ "$STATUS" != "Success" ]; then
+            ERROR=$(aws ssm get-command-invocation \
+              --command-id "$COMMAND_ID" \
+              --instance-id "${AWS_EC2_INSTANCE_ID}" \
+              --query 'StandardErrorContent' \
+              --output text)
+            echo "Error: Deployment failed with status: $STATUS" >&2
+            echo "Error Details: $ERROR" >&2
+            exit 1
+          fi
+
+          echo "✅ Deployment completed successfully!"
+            
