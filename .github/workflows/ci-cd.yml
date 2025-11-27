@@ -144,16 +144,14 @@ jobs:
 
       - name: Deploy via SSM
         run: |
-          DOCKER_IMAGE="${REGISTRY}/${REPOSITORY}:latest"
-
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${AWS_EC2_INSTANCE_ID}" \
             --document-name "AWS-RunShellScript" \
             --parameters '{"commands":[
               "docker rm -f community-fe || true",
               "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.REGISTRY }}",
-              "docker pull ${DOCKER_IMAGE}",
-              "docker run -d --name community-fe -p 3000:3000 ${DOCKER_IMAGE}"
+              "docker pull ${{vars.REGISTRY}}/${{vars.REPOSITORY}}:latest",
+              "docker run -d --name community-fe -p 3000:3000 ${{vars.REGISTRY}}/${{vars.REPOSITORY}}:latest"
             ]}' \
             --query 'Command.CommandId' \
             --output text)
