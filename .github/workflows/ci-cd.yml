@@ -63,10 +63,10 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          ${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:${{ github.sha }}
-          ${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:latest
-        cache-from: type=registry,ref=${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:buildcache # 빌드 캐시를 레지스트리에 저장
-        cache-to: type=registry,ref=${{ secrets.REGISTRY }}/${{ vars.REPOSITORY }}:buildcache,mode=ma
+          ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}:${{ github.sha }}
+          ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}:latest
+        cache-from: type=registry,ref=${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}:buildcache # 빌드 캐시를 레지스트리에 저장
+        cache-to: type=registry,ref=${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}:buildcache,mode=ma
 
   
   deploy:
@@ -75,7 +75,7 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ci/cd') # 배포 작업은 main 또는 ci/cd 브랜치에 푸시될 때만 실행
 
     env:
-      REGISTRY: ${{ secrets.REGISTRY }}
+      REGISTRY: ${{ vars.REGISTRY }}
       REPOSITORY: ${{ vars.REPOSITORY }}
       AWS_EC2_INSTANCE_ID: ${{ secrets.AWS_EC2_INSTANCE_ID }}
 
@@ -121,6 +121,7 @@ jobs:
             --command-id "$COMMAND_ID" \
             --instance-id "${AWS_EC2_INSTANCE_ID}"
 
+          echo "=== STDOUT ==="
           OUTPUT=$(aws ssm get-command-invocation \
             --command-id "$COMMAND_ID" \
             --instance-id "${AWS_EC2_INSTANCE_ID}" \
@@ -148,7 +149,12 @@ jobs:
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${AWS_EC2_INSTANCE_ID}" \
             --document-name "AWS-RunShellScript" \
-            --parameters commands="docker rm -f community-fe || true","docker pull ${DOCKER_IMAGE}","docker run -d --name community-fe -p 3000:3000 ${DOCKER_IMAGE}" \
+            --parameters '{"commands":[
+              "docker rm -f community-fe || true",
+              "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.REGISTRY }}",
+              "docker pull ${DOCKER_IMAGE}",
+              "docker run -d --name community-fe -p 3000:3000 ${DOCKER_IMAGE}"
+            ]}' \
             --query 'Command.CommandId' \
             --output text)
 
