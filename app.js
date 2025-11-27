@@ -37,7 +37,7 @@ app.use(express.static('assets'));
 
 // 백엔드 프록시 도메인 달라서 필요한 경우 사용 (스프링 부트: http://localhost:8080)
 app.use('/pages', createProxyMiddleware({
-    target: process.env.BACKEND_HOST,
+    target: process.env.BACKEND_HOST || 'http://localhost:8080',
     changeOrigin: true,
     pathRewrite: { '^': '/pages' },
     proxyTimeout: 30_000,

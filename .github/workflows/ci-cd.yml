@@ -66,7 +66,7 @@ jobs:
           ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}:${{ github.sha }}
           ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}:latest
         cache-from: type=registry,ref=${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}:buildcache # 빌드 캐시를 레지스트리에 저장
-        cache-to: type=registry,ref=${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}:buildcache,mode=ma
+        cache-to: type=registry,ref=${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}:buildcache,mode=max
 
   
   deploy:
@@ -144,6 +144,16 @@ jobs:
 
       - name: Deploy via SSM
         run: |
+          echo "⏳ Preparing environment variables for deployment..."
+          
+          aws ssm send-command \
+            --instance-ids "${AWS_EC2_INSTANCE_ID}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=["aws ssm get-parameters-by-path --path \"/prod/${{vars.REPOSITORY}}\" --recursive --with-decryption --query '\''Parameters[*].[Name,Value]'\'' --output text | sed '\''s|/prod/${{vars.REPOSITORY}}||'\'' | sed '\''s|/|_|g'\'' | tr '\''[:lower:]'\'' '\''[:upper:]'\'' | awk -F'\''\t'\'' '\''{print $1\"=\"$2}'\'' > .env.prod"]' \
+            --query 'Command.CommandId' \
+            --output text
+          echo "✅ Environment variables prepared."
+
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${AWS_EC2_INSTANCE_ID}" \
             --document-name "AWS-RunShellScript" \
@@ -151,7 +161,7 @@ jobs:
               "docker rm -f community-fe || true",
               "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.REGISTRY }}",
               "docker pull ${{vars.REGISTRY}}/${{vars.REPOSITORY}}:latest",
-              "docker run -d --name community-fe -p 3000:3000 ${{vars.REGISTRY}}/${{vars.REPOSITORY}}:latest"
+              "docker run -d --name community-fe -p 3000:3000 --env-file .env.prod ${{vars.REGISTRY}}/${{vars.REPOSITORY}}:latest"
             ]}' \
             --query 'Command.CommandId' \
             --output text)
