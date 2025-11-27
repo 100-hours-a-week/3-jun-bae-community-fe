@@ -146,12 +146,43 @@ jobs:
         run: |
           echo "⏳ Preparing environment variables for deployment..."
           
-          aws ssm send-command \
+          COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${AWS_EC2_INSTANCE_ID}" \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=["aws ssm get-parameters-by-path --path \"/prod/${{vars.REPOSITORY}}\" --recursive --with-decryption --query '\''Parameters[*].[Name,Value]'\'' --output text | sed '\''s|/prod/${{vars.REPOSITORY}}||'\'' | sed '\''s|/|_|g'\'' | tr '\''[:lower:]'\'' '\''[:upper:]'\'' | awk -F'\''\t'\'' '\''{print $1\"=\"$2}'\'' > .env.prod"]' \
             --query 'Command.CommandId' \
-            --output text
+            --output text)
+
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}" || true
+          
+          # 상태를 먼저 확인
+          STATUS=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}" \
+            --query 'Status' \
+            --output text)
+            
+          echo "Command Status: $STATUS"
+          
+            # 표준 에러 확인
+          ERROR=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${AWS_EC2_INSTANCE_ID}" \
+            --query 'StandardErrorContent' \
+            --output text)
+
+          echo "=== STDERR ==="
+          echo "$ERROR"
+
+          # 상태가 Success가 아니면 실패 처리
+          if [ "$STATUS" != "Success" ]; then
+            echo "Error: Deployment failed with status: $STATUS" >&2
+            echo "Error Details: $ERROR" >&2
+            exit 1
+          fi
+          
           echo "✅ Environment variables prepared."
 
           COMMAND_ID=$(aws ssm send-command \
