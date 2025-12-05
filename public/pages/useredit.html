@@ -1,49 +1,54 @@
 <!doctype html>
 <html lang="ko">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Community | Edit Profile</title>
-    <link rel="stylesheet" href="../css/pico.min.css">
-    <script src="../js/core/layout.js"></script>
-    <style>
-      #profile-image-preview {
-        display: block;
-        margin-bottom: 1rem;
-        border-radius: 50%;
-        object-fit: cover;
-        margin: auto;
-      }
-    </style>
-  </head>
-  <body>
-    <main class="container">
-      <article>
-        <header>
-          <h1>Edit Profile</h1>
-          <p>Update your personal information to keep your profile current.</p>
-        </header>
-        <form id="profile-form">
-          <div class="profile-image-section">
-            <img id="profile-image-preview" src="/icon/default-profile-icon.jpg" alt="Profile Image Preview" width="150" height="150">
-            <label for="profile-image-file">Upload New Profile Image</label>
-            <input type="file" id="profile-image-file" name="profileImageFile" accept="image/*">
-          </div>
 
-          <label for="profile-email">Email</label>
-          <input type="email" id="profile-email" name="email" placeholder="name@example.com" required>
-          <label for="profile-nickname">Nickname</label>
-          <input type="text" id="profile-nickname" name="nickname" maxlength="20" placeholder="닉네임" required>
-          
-          <div class="grid">
-            <button type="submit" role="button" id="profile-submit-button">Save Changes</button>
-            <button type="button" class="secondary" role="button" id="profile-delete-button">Delete Account</button>
-          </div>
-        </form>
-      </article>
-    </main>
-    <script type="module" src="../js/useredit.js"></script>
-    <script type="module" src="../js/auth.js"></script>
-    <script type="module" src="../js/useredit.js"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Community | Edit Profile</title>
+  <link rel="stylesheet" href="../css/pico.min.css">
+  <link rel="stylesheet" href="../css/modal.css">
+  <script src="../js/core/layout.js"></script>
+  <style>
+    #profile-image-preview {
+      display: block;
+      margin-bottom: 1rem;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <article>
+      <header>
+        <h1>Edit Profile</h1>
+        <p>Update your personal information to keep your profile current.</p>
+      </header>
+      <form id="profile-form">
+        <div class="profile-image-section">
+          <img id="profile-image-preview" src="/icon/default-profile-icon.jpg" alt="Profile Image Preview" width="150"
+            height="150">
+          <label for="profile-image-file">Upload New Profile Image</label>
+          <input type="file" id="profile-image-file" name="profileImageFile" accept="image/*">
+        </div>
+
+        <label for="profile-email">Email</label>
+        <input type="email" id="profile-email" name="email" placeholder="name@example.com" required>
+        <label for="profile-nickname">Nickname</label>
+        <input type="text" id="profile-nickname" name="nickname" maxlength="20" placeholder="닉네임" required>
+
+        <div class="grid">
+          <button type="submit" role="button" id="profile-submit-button">Save Changes</button>
+          <button type="button" class="secondary" role="button" id="profile-delete-button">Delete Account</button>
+        </div>
+      </form>
+    </article>
+  </main>
+  <script type="module" src="../js/useredit.js"></script>
+  <script type="module" src="../js/auth.js"></script>
+  <script type="module" src="../js/useredit.js"></script>
+</body>
+
 </html>

@@ -1,3 +1,4 @@
+import { Modal } from "./core/modal.js";
 import { API_BASE, TIMEOUT_MS } from "./core/defaults.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -52,11 +53,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const payload = await response.json();
       const postId = payload.id;
-      alert("게시글이 등록되었습니다.");
+      Modal.alert("게시글이 등록되었습니다.");
       window.location.href = postId ? `/pages/post.html?postId=${postId}` : "/pages/posts.html";
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     } finally {
       submitButton?.removeAttribute("aria-busy");
       if (submitButton) submitButton.disabled = false;

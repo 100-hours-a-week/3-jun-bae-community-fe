@@ -1,3 +1,4 @@
+import { Modal } from "./core/modal.js";
 import { API_BASE } from "./core/defaults.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -10,12 +11,12 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log(`${fd.get("password")} / ${fd.get("signup-password-confirm")}`);
         if (fd.get("password") !== fd.get("signup-password-confirm")) {
             document.getElementById("signup-password-confirm").setAttribute("aria-invalid", "true");
-            document.getElementById("password-confirm-invalid-helper").textContent=" 패스워드가 일치하지 않습니다. ";
+            document.getElementById("password-confirm-invalid-helper").textContent = " 패스워드가 일치하지 않습니다. ";
             return;
         }
         document.getElementById("signup-password-confirm").setAttribute("aria-invalid", "false");
         document.getElementById("password-confirm-invalid-helper").textContent = "";
-        
+
         confirmPasswordInput.setCustomValidity(""); // 유효성 검사 초기화
 
         try {
@@ -39,9 +40,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
             window.location.href = "/pages/login.html"; // 성공 시, 로그인 페이지로 이동
         } catch (error) {
-            alert("Error: " + error.message);
+            Modal.alert("Error: " + error.message);
         }
     });
 
-        
+
 });

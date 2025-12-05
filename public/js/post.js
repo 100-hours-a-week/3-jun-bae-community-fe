@@ -1,3 +1,4 @@
+import { Modal } from "./core/modal.js";
 import { API_BASE, TIMEOUT_MS } from "./core/defaults.js";
 import { getSessionUser } from "./core/session.js";
 
@@ -47,8 +48,11 @@ document.addEventListener("DOMContentLoaded", () => {
     await Promise.allSettled([loadPost()]);
     await loadComments();
     initBookmarkState();
-    if(!getSessionUser()) return;
-    loadLikeState(); // 로그인 상태인 유저만 호출
+    const user = getSessionUser();
+    if (user) {
+      currentUserId = user.id;
+      loadLikeState();
+    }
   }
 
   async function loadPost() {
@@ -121,7 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updateCommentPagination();
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     }
   }
 
@@ -167,6 +171,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show edit link only if current user is the author
     if (editLinkButton && post.author.id === getSessionUser()?.id) {
       editLinkButton.removeAttribute("hidden");
+      editLinkButton.addEventListener("click", () => {
+        window.location.href = `/pages/postedit.html?postId=${post.id}`;
+      });
+      editLinkButton.removeAttribute("hidden"); // Ensure it's visible
     }
 
     likeButton?.addEventListener("click", handleLikeToggle);
@@ -204,10 +212,14 @@ document.addEventListener("DOMContentLoaded", () => {
       updateLikeButton();
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     } finally {
       likeButton.disabled = false;
     }
+  }
+
+  async function loadLikeState() {
+    // Optional: If specific like state loading is needed separately
   }
 
   async function handleCommentSubmit(event) {
@@ -239,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
       replyCountEl.textContent = formatNumber(parseNumber(replyCountEl.textContent) + 1);
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     } finally {
       const submitControl = commentForm?.querySelector("button[type='submit']");
       submitControl && (submitControl.disabled = false);
@@ -257,11 +269,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const commentId = article.dataset.commentId;
       const bodyElement = article.querySelector("[data-comment-body]");
       const currentContent = bodyElement?.textContent ?? "";
-      const updated = prompt("댓글을 수정하세요.", currentContent);
+      const updated = await Modal.prompt("댓글을 수정하세요.", currentContent);
       if (updated === null) return;
       const trimmed = updated.trim();
       if (!trimmed) {
-        alert("댓글 내용은 비어 있을 수 없습니다.");
+        Modal.alert("댓글 내용은 비어 있을 수 없습니다.");
         return;
       }
       await updateComment(commentId, trimmed, bodyElement);
@@ -272,7 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const article = target.closest("article");
       if (!article) return;
       const commentId = article.dataset.commentId;
-      const confirmed = confirm("댓글을 삭제하시겠습니까?");
+      const confirmed = await Modal.confirm("댓글을 삭제하시겠습니까?");
       if (!confirmed) return;
       await deleteComment(commentId, article);
     }
@@ -304,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     }
   }
 
@@ -332,7 +344,7 @@ document.addEventListener("DOMContentLoaded", () => {
       replyCountEl.textContent = formatNumber(Math.max(parseNumber(replyCountEl.textContent) - 1, 0));
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     }
   }
 
@@ -427,18 +439,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-function renderPostError(message) {
-  postTitle.textContent = message;
-  postMeta.textContent = "";
-  postContent.innerHTML = "";
-  likeCountEl.textContent = "0";
-  viewCountEl.textContent = "0";
-  replyCountEl.textContent = "0";
-  const postFigure = document.getElementById("post-figure");
-  if (postFigure) {
-    postFigure.hidden = true;
+  function renderPostError(message) {
+    postTitle.textContent = message;
+    postMeta.textContent = "";
+    postContent.innerHTML = "";
+    likeCountEl.textContent = "0";
+    viewCountEl.textContent = "0";
+    replyCountEl.textContent = "0";
+    const postFigure = document.getElementById("post-figure");
+    if (postFigure) {
+      postFigure.hidden = true;
+    }
   }
-}
 
   function disableInteractions() {
     likeButton?.setAttribute("disabled", "true");
