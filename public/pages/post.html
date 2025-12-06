@@ -62,6 +62,90 @@
       border: 1px dashed var(--pico-muted-border-color);
       border-radius: var(--pico-border-radius);
     }
+
+    .vote-section {
+      margin-top: 2rem;
+      text-align: center;
+      padding: 2rem;
+      background: var(--pico-card-background-color);
+      border-radius: var(--pico-border-radius);
+      border: 1px solid var(--pico-card-border-color);
+    }
+
+    .vote-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .vote-btn {
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+
+    .vote-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .ai-btn {
+      background-color: #6b21a8;
+      /* Purple for AI */
+      border-color: #6b21a8;
+    }
+
+    .human-btn {
+      background-color: #15803d;
+      /* Green for Human */
+      border-color: #15803d;
+    }
+
+    .vote-result {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-top: 1rem;
+      min-height: 2rem;
+    }
+
+    .vote-correct {
+      color: #4ade80;
+      animation: bounce 0.5s;
+    }
+
+    .vote-incorrect {
+      color: #ef4444;
+      animation: shake 0.5s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-5px);
+      }
+
+      75% {
+        transform: translateX(5px);
+      }
+    }
   </style>
 </head>
 
@@ -86,10 +170,16 @@
         </div>
         <div class="post-actions">
           <button type="button" role="button" id="post-like-button" aria-pressed="false">좋아요</button>
-          <button type="button" class="secondary" role="button" id="post-bookmark-button">북마크</button>
           <button type="button" id="post-edit-link" style="margin-left: auto;" href="/pages/postedit.html"
             hidden="true">Edit Post</button>
 
+        </div>
+        <div class="vote-section" id="vote-section" hidden>
+          <div class="vote-buttons">
+            <button type="button" class="vote-btn ai-btn" data-vote="AI">🤖 AI</button>
+            <button type="button" class="vote-btn human-btn" data-vote="HUMAN">👤 Human</button>
+          </div>
+          <div id="vote-result" class="vote-result" hidden></div>
         </div>
       </footer>
     </article>

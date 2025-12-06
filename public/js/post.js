@@ -2,7 +2,6 @@ import { Modal } from "./core/modal.js";
 import { API_BASE, TIMEOUT_MS } from "./core/defaults.js";
 import { getSessionUser } from "./core/session.js";
 
-const BOOKMARK_KEY = "community:bookmarks";
 const COMMENT_PAGE_SIZE = 10;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -21,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const viewCountEl = document.getElementById("post-view-count");
   const replyCountEl = document.getElementById("post-reply-count");
   const likeButton = document.getElementById("post-like-button");
-  const bookmarkButton = document.getElementById("post-bookmark-button");
   const editLinkButton = document.getElementById("post-edit-link");
 
   const commentForm = document.getElementById("comment-form");
@@ -30,6 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const commentEmpty = document.getElementById("comment-empty");
   const loadMoreButton = document.getElementById("load-more-comments");
   const commentPagination = document.getElementById("comment-pagination");
+
+  const voteSection = document.getElementById("vote-section");
+  const voteResult = document.getElementById("vote-result");
+  const voteButtons = document.querySelectorAll(".vote-btn");
 
   if (!postId) {
     renderPostError("잘못된 접근입니다. 게시글을 찾을 수 없습니다.");
@@ -41,13 +43,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUserId = null;
   let commentPage = 0;
   let commentsTotalPages = 0;
+  let currentPost = null;
 
   init();
 
   async function init() {
     await Promise.allSettled([loadPost()]);
     await loadComments();
-    initBookmarkState();
     const user = getSessionUser();
     if (user) {
       currentUserId = user.id;
@@ -69,7 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const post = await response.json();
+      currentPost = post;
       updatePost(post);
+      updateVoteState(post);
     } catch (error) {
       console.error(error);
       renderPostError(error.message);
@@ -179,12 +183,95 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     likeButton?.addEventListener("click", handleLikeToggle);
-    bookmarkButton?.addEventListener("click", handleBookmarkToggle);
     commentForm?.addEventListener("submit", handleCommentSubmit);
     loadMoreButton?.addEventListener("click", () => {
       loadComments(commentPage + 1, true);
     });
     commentList?.addEventListener("click", handleCommentClicks);
+
+    voteButtons.forEach(btn => {
+      btn.addEventListener("click", (e) => handleVote(e.target.dataset.vote));
+    });
+  }
+
+  function updateVoteState(post) {
+    if (!voteSection) return;
+
+    voteSection.hidden = false;
+
+    const user = getSessionUser();
+    // If user is author, disable buttons and show message
+    if (user && post.author?.id === user.id) {
+      disableVoteButtons();
+      if (voteResult) {
+        voteResult.hidden = false;
+        voteResult.textContent = "자신의 게시글에는 투표할 수 없습니다.";
+        voteResult.className = "vote-result";
+      }
+      return;
+    }
+
+    if (post.currentUserVote) {
+      showVoteResult(post.currentUserVote.voteType, post.currentUserVote.isCorrect);
+      disableVoteButtons();
+    }
+  }
+
+  async function handleVote(voteType) {
+    if (!voteType || !postId) return;
+
+    try {
+      const response = await fetchWithTimeout(`${API_BASE}/posts/${postId}/vote`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ voteType }),
+        timeout: TIMEOUT_MS
+      });
+
+      if (!response.ok) {
+        throw new Error("투표에 실패했습니다.");
+      }
+
+      // Since API doesn't return result, we check against local post data if available
+      // or re-fetch post to get updated status. 
+      // However, for immediate feedback, we can check authorType if available.
+      // But let's re-fetch to be safe and get the canonical result.
+      await loadPost();
+
+    } catch (error) {
+      console.error(error);
+      Modal.alert(error.message);
+    }
+  }
+
+  function showVoteResult(voteType, isCorrect) {
+    if (!voteResult) return;
+
+    voteResult.hidden = false;
+    voteResult.className = "vote-result"; // Reset classes
+
+    if (isCorrect) {
+      voteResult.textContent = "정답입니다! 🎉";
+      voteResult.classList.add("vote-correct");
+      triggerConfetti();
+    } else {
+      voteResult.textContent = "틀렸습니다. 😢";
+      voteResult.classList.add("vote-incorrect");
+    }
+  }
+
+  function disableVoteButtons() {
+    voteButtons.forEach(btn => {
+      btn.disabled = true;
+      btn.style.opacity = "0.5";
+      btn.style.cursor = "not-allowed";
+    });
+  }
+
+  function triggerConfetti() {
+    // Simple confetti effect using canvas or just CSS animation
+    // For now, let's just rely on the CSS bounce animation
   }
 
   async function handleLikeToggle() {
@@ -405,41 +492,6 @@ document.addEventListener("DOMContentLoaded", () => {
     likeButton.textContent = likedState ? "좋아요 취소" : "좋아요";
   }
 
-  function handleBookmarkToggle() {
-    if (!bookmarkButton) return;
-    const bookmarks = loadBookmarks();
-    const numericId = Number(postId);
-    const index = bookmarks.indexOf(numericId);
-    if (index > -1) {
-      bookmarks.splice(index, 1);
-    } else {
-      bookmarks.push(numericId);
-    }
-    localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
-    updateBookmarkButton(bookmarks.includes(numericId));
-  }
-
-  function initBookmarkState() {
-    const bookmarks = loadBookmarks();
-    updateBookmarkButton(bookmarks.includes(Number(postId)));
-  }
-
-  function updateBookmarkButton(isBookmarked) {
-    if (!bookmarkButton) return;
-    bookmarkButton.textContent = isBookmarked ? "북마크 해제" : "북마크";
-    bookmarkButton.setAttribute("aria-pressed", String(isBookmarked));
-  }
-
-  function loadBookmarks() {
-    try {
-      const stored = localStorage.getItem(BOOKMARK_KEY);
-      if (!stored) return [];
-      return JSON.parse(stored);
-    } catch {
-      return [];
-    }
-  }
-
   function renderPostError(message) {
     postTitle.textContent = message;
     postMeta.textContent = "";
@@ -455,9 +507,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function disableInteractions() {
     likeButton?.setAttribute("disabled", "true");
-    bookmarkButton?.setAttribute("disabled", "true");
     commentForm?.setAttribute("hidden", "true");
     loadMoreButton?.setAttribute("disabled", "true");
+    disableVoteButtons();
   }
 });
 
