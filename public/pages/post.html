@@ -1,11 +1,12 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Community | Post Detail</title>
   <link rel="stylesheet" href="../css/pico.min.css">
+  <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/modal.css">
   <script src="../js/core/layout.js"></script>
   <style>
@@ -67,11 +68,11 @@
 <body>
   <main class="container">
     <article id="post-detail" aria-live="polite" aria-busy="true">
-      <header>
-        <p id="post-topic" class="contrast"></p>
+      <heading>
+        <!-- <p id="post-topic" class="contrast"></p> -->
         <h1 id="post-title">게시글을 불러오는 중입니다…</h1>
         <p id="post-meta"></p>
-      </header>
+      </heading>
       <figure id="post-figure" hidden>
         <img id="post-image" src="" alt="Post illustration">
         <figcaption id="post-figcaption"></figcaption>
@@ -93,10 +94,10 @@
       </footer>
     </article>
     <section aria-labelledby="comments-heading" id="post-comments">
-      <header>
+      <heading>
         <h2 id="comments-heading">Comments</h2>
         <p>Join the discussion below.</p>
-      </header>
+      </heading>
       <form id="comment-form">
         <label for="comment-body">Add a comment</label>
         <textarea id="comment-body" name="comment" rows="4" placeholder="댓글은 최대 150자까지 작성할 수 있습니다." required

@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderPostCard(post) {
     const article = document.createElement("article");
 
-    const header = document.createElement("header");
+    const heading = document.createElement("heading");
     const title = document.createElement("h2");
     const titleLink = document.createElement("a");
     titleLink.href = `/pages/post.html?postId=${post.id}`;
@@ -166,8 +166,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const createdAt = formatRelativeTime(post.createdAt);
     meta.innerHTML = `by <strong>${escapeHtml(authorNickname)}</strong> • ${createdAt}`;
 
-    header.appendChild(title);
-    header.appendChild(meta);
+    heading.appendChild(title);
+    heading.appendChild(meta);
 
     const preview = document.createElement("p");
     preview.textContent = buildExcerpt(post.content);
@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
     footer.appendChild(stats);
     footer.appendChild(readMore);
 
-    article.appendChild(header);
+    article.appendChild(heading);
     article.appendChild(preview);
     article.appendChild(footer);
 

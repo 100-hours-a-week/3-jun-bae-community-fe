@@ -141,14 +141,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function updatePost(post) {
     postTitle.textContent = post.title ?? "(제목 없음)";
     postMeta.innerHTML = buildPostMeta(post);
-    if (post.author?.nickname) {
-      postTopic.textContent = `${post.author.nickname}님의 이야기`;
-      postTopic.removeAttribute("hidden");
-    } else {
-      postTopic.textContent = "";
-      postTopic.setAttribute("hidden", "true");
+    if (postTopic) {
+      if (post.author?.nickname) {
+        postTopic.textContent = `${post.author.nickname}님의 이야기`;
+        postTopic.removeAttribute("hidden");
+      } else {
+        postTopic.textContent = "";
+        postTopic.setAttribute("hidden", "true");
+      }
     }
-
     renderContent(postContent, post.content ?? "");
 
     likeCountEl.textContent = formatNumber(post.likeCount);
@@ -352,7 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const article = document.createElement("article");
     article.dataset.commentId = String(comment.id ?? "");
 
-    const header = document.createElement("header");
+    const heading = document.createElement("heading");
     const title = document.createElement("h3");
     title.textContent = comment.authorNickname ?? "익명";
     const time = document.createElement("p");
@@ -367,14 +368,14 @@ document.addEventListener("DOMContentLoaded", () => {
       timeElement.textContent = "방금 전";
     }
     time.appendChild(timeElement);
-    header.appendChild(title);
-    header.appendChild(time);
+    heading.appendChild(title);
+    heading.appendChild(time);
 
     const body = document.createElement("p");
     body.dataset.commentBody = "true";
     body.textContent = comment.content ?? "";
 
-    article.appendChild(header);
+    article.appendChild(heading);
     article.appendChild(body);
 
     if (currentUserId && comment.authorId === currentUserId) {

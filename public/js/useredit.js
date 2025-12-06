@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
       profileImageInput && (profileImageInput.value = profile.profileImageUrl ?? "");
       const profileImagePreview = document.getElementById("profile-image-preview");
       if (profileImagePreview) {
-        profileImagePreview.src = profile.profileImageUrl || "/assets/icon/default-profile-icon.jpg";
+        profileImagePreview.src = profile.profileImageUrl || "/icon/default-profile-icon.jpg";
       }
     } catch (error) {
       console.error(error);

@@ -1,11 +1,12 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Community | Posts</title>
   <link rel="stylesheet" href="../css/pico.min.css">
+  <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/modal.css">
   <script src="../js/core/layout.js"></script>
   <style>
@@ -72,13 +73,13 @@
       </select>
     </div>
     <section aria-live="polite" aria-busy="false" id="post-feed">
-      <header>
+      <heading>
         <h1 style="margin: 0px">Community Feed</h1>
         <div class="grid parent">
           <p>Scroll to load more posts from the community.</p>
           <a href="/pages/postadd.html" role="button" data-auth='user' class="primary">Write a New Post</a>
         </div>
-      </header>
+      </heading>
       <div id="post-list" class="ㅣ" data-state="loading">
         <p class="empty-state" id="post-empty">게시글이 없습니다.</p>
       </div>
