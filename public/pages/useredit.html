@@ -1,11 +1,12 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Community | Edit Profile</title>
   <link rel="stylesheet" href="../css/pico.min.css">
+  <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/modal.css">
   <script src="../js/core/layout.js"></script>
   <style>
@@ -22,10 +23,10 @@
 <body>
   <main class="container">
     <article>
-      <header>
+      <heading>
         <h1>Edit Profile</h1>
         <p>Update your personal information to keep your profile current.</p>
-      </header>
+      </heading>
       <form id="profile-form">
         <div class="profile-image-section">
           <img id="profile-image-preview" src="/icon/default-profile-icon.jpg" alt="Profile Image Preview" width="150"
@@ -47,7 +48,7 @@
     </article>
   </main>
   <script type="module" src="../js/useredit.js"></script>
-  <script type="module" src="../js/auth.js"></script>
+  <script type="module" src="../js/core/auth.js"></script>
   <script type="module" src="../js/useredit.js"></script>
 </body>
 
