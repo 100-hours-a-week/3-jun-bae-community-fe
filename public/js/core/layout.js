@@ -4,6 +4,7 @@ const header = `
       <nav class="container">
         <ul>
           <li><a href="/index.html" style="font-size: 1.2rem; font-weight: 800; color: var(--pico-primary);">TURING ARENA</a></li>
+          <li><a href="/pages/ranking.html">Ranking</a></li>
         </ul>
         <ul>
           <li data-auth="guest"><a href="/pages/login.html" role="button" class="secondary">Log In</a></li>
