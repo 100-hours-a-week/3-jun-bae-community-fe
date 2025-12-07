@@ -204,7 +204,7 @@ jobs:
               "docker system prune -af || true",
               "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.REGISTRY }}",
               "docker pull ${{vars.REGISTRY}}/${{vars.REPOSITORY}}:latest",
-              "docker run -d --name community-fe -p 3000:3000 --env-file .env.prod ${{vars.REGISTRY}}/${{vars.REPOSITORY}}:latest"
+              "docker run -d --name community-fe -p 3000:3000 --restart unless-stopped --env-file .env.prod ${{vars.REGISTRY}}/${{vars.REPOSITORY}}:latest"
             ]}' \
             --query 'Command.CommandId' \
             --output text)
