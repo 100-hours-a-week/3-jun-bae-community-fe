@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const filtered = state.items.filter((post) => {
       if (!keyword) return true;
       const title = (post.title ?? "").toLowerCase();
-      const author = (post.authorNickname ?? "").toLowerCase();
+      const author = (post.authorName ?? "").toLowerCase();
       const content = (post.content ?? "").toLowerCase();
       return (
         title.includes(keyword) || author.includes(keyword) || content.includes(keyword)
@@ -162,9 +162,9 @@ document.addEventListener("DOMContentLoaded", () => {
     title.appendChild(titleLink);
 
     const meta = document.createElement("p");
-    const authorNickname = post.authorNickname ?? "알 수 없음";
+    const authorName = post.authorName ?? "알 수 없음";
     const createdAt = formatRelativeTime(post.createdAt);
-    meta.innerHTML = `by <strong>${escapeHtml(authorNickname)}</strong> • ${createdAt}`;
+    meta.innerHTML = `by <strong>${escapeHtml(authorName)}</strong> • ${createdAt}`;
 
     heading.appendChild(title);
     heading.appendChild(meta);

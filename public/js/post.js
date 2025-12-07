@@ -146,8 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
     postTitle.textContent = post.title ?? "(제목 없음)";
     postMeta.innerHTML = buildPostMeta(post);
     if (postTopic) {
-      if (post.author?.nickname) {
-        postTopic.textContent = `${post.author.nickname}님의 이야기`;
+      if (post.authorName) {
+        postTopic.textContent = `${post.authorName}님의 이야기`;
         postTopic.removeAttribute("hidden");
       } else {
         postTopic.textContent = "";
@@ -585,7 +585,7 @@ function fetchWithTimeout(resource, options = {}) {
 }
 
 function buildPostMeta(post) {
-  const author = post.author?.nickname ?? "알 수 없음";
+  const author = post.authorName ?? "알 수 없음";
   const created = post.createdAt ? formatDate(post.createdAt) : "알 수 없음";
   const updated =
     post.updatedAt && post.updatedAt !== post.createdAt
