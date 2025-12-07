@@ -34,13 +34,33 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (!response.ok) {
-                throw new Error("Signup failed");
+                const errorData = await response.json();
+                const details = errorData.details || "";
+
+                if (details.includes("Nickname already in use")) {
+                    Modal.alert("이미 사용 중인 닉네임입니다.");
+                    return;
+                }
+
+                if (details.includes("Email already in use")) {
+                    Modal.alert("이미 사용 중인 이메일입니다.");
+                    return;
+                }
+
+                throw new Error("회원가입에 실패했습니다.");
             }
 
             const data = await response.json();
             window.location.href = "/pages/login.html"; // 성공 시, 로그인 페이지로 이동
         } catch (error) {
-            Modal.alert("Error: " + error.message);
+            // Modal.alert handles the display, so we don't need to alert again if it was handled above
+            // But if it fell through to here with a generic error
+            if (error.message !== "회원가입에 실패했습니다.") {
+                // It might be a network error or something else
+                Modal.alert("오류가 발생했습니다: " + error.message);
+            } else {
+                Modal.alert("회원가입에 실패했습니다. 다시 시도해주세요.");
+            }
         }
     });
 
