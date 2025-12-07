@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   observer.observe(scrollAnchor);
 
   searchInput?.addEventListener("input", () => renderPosts());
-  sortSelect?.addEventListener("change", () => renderPosts());
+  sortSelect?.addEventListener("change", () => fetchPosts(true));
 
   fetchPosts(true);
 
@@ -55,6 +55,28 @@ document.addEventListener("DOMContentLoaded", () => {
         params.set("cursorId", state.cursor);
       }
       params.set("size", "12");
+
+      const sortValue = sortSelect?.value ?? "latest";
+      let sortParam = "latest";
+      switch (sortValue) {
+        case "latest":
+          sortParam = "latest";
+          break;
+        case "popular":
+          sortParam = "likes";
+          break;
+        case "commented":
+          sortParam = "comments";
+          break;
+        case "views":
+          sortParam = "views";
+          break;
+        default:
+          sortParam = "latest";
+          break;
+      }
+
+      params.set("sort", sortParam);
 
       const response = await fetchWithTimeout(
         `${API_BASE}/posts?${params.toString()}`,
@@ -99,8 +121,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderPosts() {
     const keyword = searchInput?.value.trim().toLowerCase() ?? "";
-    const sortType = sortSelect?.value ?? "latest";
 
+    // Frontend search filtering (as per plan/request to only change sorting)
     const filtered = state.items.filter((post) => {
       if (!keyword) return true;
       const title = (post.title ?? "").toLowerCase();
@@ -111,21 +133,11 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     });
 
-    const sorted = [...filtered].sort((a, b) => {
-      switch (sortType) {
-        case "popular":
-          return (b.likeCount ?? 0) - (a.likeCount ?? 0);
-        case "commented":
-          return (b.replyCount ?? 0) - (a.replyCount ?? 0);
-        case "latest":
-        default:
-          return new Date(b.createdAt ?? 0) - new Date(a.createdAt ?? 0);
-      }
-    });
+    // Removed frontend sorting as it is now handled by backend
 
     postList.innerHTML = "";
 
-    if (!sorted.length) {
+    if (!filtered.length) {
       emptyState?.removeAttribute("hidden");
       emptyState && (emptyState.textContent = keyword ? "검색 결과가 없습니다." : "아직 게시글이 없습니다.");
       postList.appendChild(emptyState);
@@ -134,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     emptyState?.setAttribute("hidden", "true");
 
-    sorted.forEach((post) => {
+    filtered.forEach((post) => {
       postList.appendChild(renderPostCard(post));
     });
   }
@@ -142,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderPostCard(post) {
     const article = document.createElement("article");
 
-    const header = document.createElement("header");
+    const heading = document.createElement("heading");
     const title = document.createElement("h2");
     const titleLink = document.createElement("a");
     titleLink.href = `/pages/post.html?postId=${post.id}`;
@@ -154,8 +166,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const createdAt = formatRelativeTime(post.createdAt);
     meta.innerHTML = `by <strong>${escapeHtml(authorNickname)}</strong> • ${createdAt}`;
 
-    header.appendChild(title);
-    header.appendChild(meta);
+    heading.appendChild(title);
+    heading.appendChild(meta);
 
     const preview = document.createElement("p");
     preview.textContent = buildExcerpt(post.content);
@@ -180,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
     footer.appendChild(stats);
     footer.appendChild(readMore);
 
-    article.appendChild(header);
+    article.appendChild(heading);
     article.appendChild(preview);
     article.appendChild(footer);
 

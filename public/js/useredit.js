@@ -1,3 +1,4 @@
+import { Modal } from "./core/modal.js";
 import { API_BASE, TIMEOUT_MS } from "./core/defaults.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -58,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (response.status === 401) {
-        alert("로그인이 필요합니다. 다시 로그인해주세요.");
+        Modal.alert("로그인이 필요합니다. 다시 로그인해주세요.");
         window.location.href = "/pages/login.html";
         return;
       }
@@ -70,10 +71,10 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("프로필 업데이트에 실패했습니다.");
       }
 
-      alert("프로필이 업데이트되었습니다.");
+      Modal.alert("프로필이 업데이트되었습니다.");
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     } finally {
       submitButton.disabled = false;
       submitButton.removeAttribute("aria-busy");
@@ -81,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   deleteButton?.addEventListener("click", async () => {
-    const confirmed = confirm("정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.");
+    const confirmed = await Modal.confirm("정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.");
     if (!confirmed) return;
 
     try {
@@ -96,11 +97,11 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("계정 삭제에 실패했습니다.");
       }
 
-      alert("계정이 삭제되었습니다.");
+      await Modal.alert("계정이 삭제되었습니다.");
       window.location.href = "/pages/signup.html";
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     } finally {
       deleteButton.disabled = false;
     }
@@ -116,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (response.status === 401) {
-        alert("로그인이 필요합니다.");
+        Modal.alert("로그인이 필요합니다.");
         window.location.href = "/pages/login.html";
         return;
       }
@@ -131,11 +132,11 @@ document.addEventListener("DOMContentLoaded", () => {
       profileImageInput && (profileImageInput.value = profile.profileImageUrl ?? "");
       const profileImagePreview = document.getElementById("profile-image-preview");
       if (profileImagePreview) {
-        profileImagePreview.src = profile.profileImageUrl || "/assets/icon/default-profile-icon.jpg";
+        profileImagePreview.src = profile.profileImageUrl || "/icon/default-profile-icon.jpg";
       }
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     }
   }
 });

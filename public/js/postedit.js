@@ -1,3 +1,4 @@
+import { Modal } from "./core/modal.js";
 import { API_BASE, TIMEOUT_MS } from "./core/defaults.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -11,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const fileInput = document.getElementById("edit-image-file");
 
   if (!form || !postId) {
-    alert("잘못된 접근입니다. 게시글 ID가 필요합니다.");
+    Modal.alert("잘못된 접근입니다. 게시글 ID가 필요합니다.");
     window.location.replace("/pages/posts.html");
     return;
   }
@@ -62,11 +63,11 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("게시글 수정에 실패했습니다.");
       }
 
-      alert("게시글이 수정되었습니다.");
+      await Modal.alert("게시글이 수정되었습니다.");
       window.location.href = `/pages/post.html?postId=${postId}`;
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     } finally {
       submitButton.disabled = false;
       submitButton.removeAttribute("aria-busy");
@@ -74,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   deleteButton?.addEventListener("click", async () => {
-    const confirmed = confirm("게시글을 삭제하시겠습니까?");
+    const confirmed = await Modal.confirm("게시글을 삭제하시겠습니까?");
     if (!confirmed) return;
 
     try {
@@ -89,11 +90,11 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("게시글 삭제에 실패했습니다.");
       }
 
-      alert("게시글이 삭제되었습니다.");
+      await Modal.alert("게시글이 삭제되었습니다.");
       window.location.href = "/pages/posts.html";
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     } finally {
       deleteButton.disabled = false;
     }
@@ -124,7 +125,7 @@ async function loadPost(postId) {
     if (contentInput) contentInput.value = post.content ?? "";
   } catch (error) {
     console.error(error);
-    alert(error.message);
+    Modal.alert(error.message);
     window.location.replace("/pages/posts.html");
   }
 }

@@ -1,13 +1,14 @@
 
 const header = `
-    <header class="container">
-      <nav>
+    <header>
+      <nav class="container">
         <ul>
-          <li><a href="/pages/posts.html"><strong>Community</strong></a></li>
+          <li><a href="/index.html" style="font-size: 1.2rem; font-weight: 800; color: var(--pico-primary);">TURING ARENA</a></li>
+          <li><a href="/pages/ranking.html">Ranking</a></li>
         </ul>
         <ul>
-          <li data-auth="guest"><a href="/pages/login.html">Log In</a></li>
-          <li data-auth="guest"><a href="/pages/signup.html" class="secondary">Sign Up</a></li>
+          <li data-auth="guest"><a href="/pages/login.html" role="button" class="secondary">Log In</a></li>
+          <li data-auth="guest"><a href="/pages/signup.html" role="button">Sign Up</a></li>
           <li data-auth="user">
             <details class="dropdown">
               <summary aria-haspopup="listbox">
@@ -26,14 +27,14 @@ const header = `
 
 const footer = `
 <footer class="container">
-    <small>© 2025 3-jun Bae Community · Kakao Boot Camp</small>
+    <small>© 2025 Turing Arena · Human vs AI</small>
     <small> <a href="/pages/privacy.html">Privacy Policy</a> | <a href="/pages/terms.html">Terms of Service</a></small>
 </footer>
 `
 
 // layout insert
 document.addEventListener("DOMContentLoaded", () => {
-    const body = document.body;
-    body.insertAdjacentHTML("afterbegin", header);
-    body.insertAdjacentHTML("beforeend", footer);
+  const body = document.body;
+  body.insertAdjacentHTML("afterbegin", header);
+  body.insertAdjacentHTML("beforeend", footer);
 });

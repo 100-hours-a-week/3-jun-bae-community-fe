@@ -1,3 +1,4 @@
+import { Modal } from "./modal.js";
 import {
   ensureSession,
   getSessionUser,
@@ -85,7 +86,7 @@ async function handleLogout(triggerElement) {
     updateAuthUI();
   } catch (error) {
     console.error(error);
-    alert(error.message || "로그아웃 중 오류가 발생했습니다.");
+    Modal.alert(error.message || "로그아웃 중 오류가 발생했습니다.");
   } finally {
     setBusyState(triggerElement, false);
   }

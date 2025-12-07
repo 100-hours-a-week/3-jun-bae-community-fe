@@ -1,3 +1,4 @@
+import { Modal } from "./core/modal.js";
 import { API_BASE } from "./core/defaults.js";
 import { ensureSession, isAuthenticated, saveSession } from "./core/session.js";
 
@@ -35,7 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       saveSession(data);
       window.location.href = "/pages/posts.html";
     } catch (error) {
-      alert("Error: " + error.message);
+      Modal.alert("Error: " + error.message);
     }
   });
 });

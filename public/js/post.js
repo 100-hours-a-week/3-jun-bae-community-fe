@@ -1,7 +1,7 @@
+import { Modal } from "./core/modal.js";
 import { API_BASE, TIMEOUT_MS } from "./core/defaults.js";
 import { getSessionUser } from "./core/session.js";
 
-const BOOKMARK_KEY = "community:bookmarks";
 const COMMENT_PAGE_SIZE = 10;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const viewCountEl = document.getElementById("post-view-count");
   const replyCountEl = document.getElementById("post-reply-count");
   const likeButton = document.getElementById("post-like-button");
-  const bookmarkButton = document.getElementById("post-bookmark-button");
   const editLinkButton = document.getElementById("post-edit-link");
 
   const commentForm = document.getElementById("comment-form");
@@ -29,6 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const commentEmpty = document.getElementById("comment-empty");
   const loadMoreButton = document.getElementById("load-more-comments");
   const commentPagination = document.getElementById("comment-pagination");
+
+  const voteSection = document.getElementById("vote-section");
+  const voteResult = document.getElementById("vote-result");
+  const voteButtons = document.querySelectorAll(".vote-btn");
 
   if (!postId) {
     renderPostError("잘못된 접근입니다. 게시글을 찾을 수 없습니다.");
@@ -40,15 +43,18 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUserId = null;
   let commentPage = 0;
   let commentsTotalPages = 0;
+  let currentPost = null;
 
   init();
 
   async function init() {
     await Promise.allSettled([loadPost()]);
     await loadComments();
-    initBookmarkState();
-    if(!getSessionUser()) return;
-    loadLikeState(); // 로그인 상태인 유저만 호출
+    const user = getSessionUser();
+    if (user) {
+      currentUserId = user.id;
+      loadLikeState();
+    }
   }
 
   async function loadPost() {
@@ -65,7 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const post = await response.json();
+      currentPost = post;
       updatePost(post);
+      updateVoteState(post);
     } catch (error) {
       console.error(error);
       renderPostError(error.message);
@@ -121,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updateCommentPagination();
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     }
   }
 
@@ -137,14 +145,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function updatePost(post) {
     postTitle.textContent = post.title ?? "(제목 없음)";
     postMeta.innerHTML = buildPostMeta(post);
-    if (post.author?.nickname) {
-      postTopic.textContent = `${post.author.nickname}님의 이야기`;
-      postTopic.removeAttribute("hidden");
-    } else {
-      postTopic.textContent = "";
-      postTopic.setAttribute("hidden", "true");
+    if (postTopic) {
+      if (post.author?.nickname) {
+        postTopic.textContent = `${post.author.nickname}님의 이야기`;
+        postTopic.removeAttribute("hidden");
+      } else {
+        postTopic.textContent = "";
+        postTopic.setAttribute("hidden", "true");
+      }
     }
-
     renderContent(postContent, post.content ?? "");
 
     likeCountEl.textContent = formatNumber(post.likeCount);
@@ -167,15 +176,165 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show edit link only if current user is the author
     if (editLinkButton && post.author.id === getSessionUser()?.id) {
       editLinkButton.removeAttribute("hidden");
+      editLinkButton.addEventListener("click", () => {
+        window.location.href = `/pages/postedit.html?postId=${post.id}`;
+      });
+      editLinkButton.removeAttribute("hidden"); // Ensure it's visible
     }
 
     likeButton?.addEventListener("click", handleLikeToggle);
-    bookmarkButton?.addEventListener("click", handleBookmarkToggle);
     commentForm?.addEventListener("submit", handleCommentSubmit);
     loadMoreButton?.addEventListener("click", () => {
       loadComments(commentPage + 1, true);
     });
     commentList?.addEventListener("click", handleCommentClicks);
+
+    voteButtons.forEach(btn => {
+      btn.addEventListener("click", (e) => handleVote(e.target.dataset.vote));
+    });
+  }
+
+  function updateVoteState(post) {
+    if (!voteSection) return;
+
+    voteSection.hidden = false;
+
+    const user = getSessionUser();
+    // If user is author, disable buttons and show message
+    if (user && post.author?.id === user.id) {
+      disableVoteButtons();
+      if (voteResult) {
+        voteResult.hidden = false;
+        voteResult.textContent = "자신의 게시글에는 투표할 수 없습니다.";
+        voteResult.className = "vote-result";
+      }
+      return;
+    }
+
+    if (post.currentUserVote) {
+      showVoteResult(post.currentUserVote.voteType, post.currentUserVote.isCorrect);
+      disableVoteButtons();
+    }
+  }
+
+  async function handleVote(voteType) {
+    if (!voteType || !postId) return;
+
+    const user = getSessionUser();
+    if (!user) {
+      Modal.alert("로그인 후 투표가 가능합니다.");
+      return;
+    }
+
+    try {
+      const response = await fetchWithTimeout(`${API_BASE}/posts/${postId}/vote`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ voteType }),
+        timeout: TIMEOUT_MS
+      });
+
+      if (!response.ok) {
+        throw new Error("투표에 실패했습니다.");
+      }
+
+      const result = await response.json();
+      if (result.success && result.data) {
+        const { correct, userTotalScore } = result.data;
+        showVoteResult(voteType, correct, userTotalScore);
+        disableVoteButtons();
+      } else {
+        // Fallback
+        await loadPost();
+      }
+
+    } catch (error) {
+      console.error(error);
+      Modal.alert(error.message);
+    }
+  }
+
+  function showVoteResult(voteType, isCorrect, score) {
+    if (!voteResult) return;
+
+    voteResult.hidden = false;
+    voteResult.className = "vote-result"; // Reset classes
+
+    if (isCorrect) {
+      voteResult.innerHTML = `정답입니다! 🎉<br>`;
+
+      voteResult.classList.add("vote-correct");
+      triggerConfetti();
+    } else {
+      voteResult.innerHTML = `틀렸습니다. 😢<br>`;
+      voteResult.classList.add("vote-incorrect");
+    }
+    if (score != null) {
+      voteResult.innerHTML += `<small>현재 점수: ${formatNumber(score)}점</small>`;
+    }
+  }
+
+  function disableVoteButtons() {
+    voteButtons.forEach(btn => {
+      btn.disabled = true;
+      btn.style.opacity = "0.5";
+      btn.style.cursor = "not-allowed";
+    });
+  }
+
+  function triggerConfetti() {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    function randomInRange(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    const interval = setInterval(function () {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      // 입자 생성
+      createConfettiParticles(10);
+    }, 250);
+  }
+
+  function createConfettiParticles(count) {
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff'];
+    const container = document.body;
+
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      el.style.position = 'fixed';
+      el.style.width = '10px';
+      el.style.height = '10px';
+      el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.top = '-10px';
+      el.style.zIndex = '9999';
+      el.style.pointerEvents = 'none';
+      el.style.transition = 'top 2s ease-in, transform 2s linear';
+
+      container.appendChild(el);
+
+      // Trigger animation
+      requestAnimationFrame(() => {
+        el.style.top = '110vh';
+        el.style.transform = `rotate(${Math.random() * 360}deg)`;
+      });
+
+      // Cleanup
+      setTimeout(() => {
+        el.remove();
+      }, 2000);
+    }
   }
 
   async function handleLikeToggle() {
@@ -204,10 +363,14 @@ document.addEventListener("DOMContentLoaded", () => {
       updateLikeButton();
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     } finally {
       likeButton.disabled = false;
     }
+  }
+
+  async function loadLikeState() {
+    // Optional: If specific like state loading is needed separately
   }
 
   async function handleCommentSubmit(event) {
@@ -239,7 +402,7 @@ document.addEventListener("DOMContentLoaded", () => {
       replyCountEl.textContent = formatNumber(parseNumber(replyCountEl.textContent) + 1);
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     } finally {
       const submitControl = commentForm?.querySelector("button[type='submit']");
       submitControl && (submitControl.disabled = false);
@@ -257,11 +420,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const commentId = article.dataset.commentId;
       const bodyElement = article.querySelector("[data-comment-body]");
       const currentContent = bodyElement?.textContent ?? "";
-      const updated = prompt("댓글을 수정하세요.", currentContent);
+      const updated = await Modal.prompt("댓글을 수정하세요.", currentContent);
       if (updated === null) return;
       const trimmed = updated.trim();
       if (!trimmed) {
-        alert("댓글 내용은 비어 있을 수 없습니다.");
+        Modal.alert("댓글 내용은 비어 있을 수 없습니다.");
         return;
       }
       await updateComment(commentId, trimmed, bodyElement);
@@ -272,7 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const article = target.closest("article");
       if (!article) return;
       const commentId = article.dataset.commentId;
-      const confirmed = confirm("댓글을 삭제하시겠습니까?");
+      const confirmed = await Modal.confirm("댓글을 삭제하시겠습니까?");
       if (!confirmed) return;
       await deleteComment(commentId, article);
     }
@@ -304,7 +467,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     }
   }
 
@@ -332,7 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
       replyCountEl.textContent = formatNumber(Math.max(parseNumber(replyCountEl.textContent) - 1, 0));
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      Modal.alert(error.message);
     }
   }
 
@@ -340,7 +503,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const article = document.createElement("article");
     article.dataset.commentId = String(comment.id ?? "");
 
-    const header = document.createElement("header");
+    const heading = document.createElement("heading");
     const title = document.createElement("h3");
     title.textContent = comment.authorNickname ?? "익명";
     const time = document.createElement("p");
@@ -355,14 +518,14 @@ document.addEventListener("DOMContentLoaded", () => {
       timeElement.textContent = "방금 전";
     }
     time.appendChild(timeElement);
-    header.appendChild(title);
-    header.appendChild(time);
+    heading.appendChild(title);
+    heading.appendChild(time);
 
     const body = document.createElement("p");
     body.dataset.commentBody = "true";
     body.textContent = comment.content ?? "";
 
-    article.appendChild(header);
+    article.appendChild(heading);
     article.appendChild(body);
 
     if (currentUserId && comment.authorId === currentUserId) {
@@ -392,59 +555,24 @@ document.addEventListener("DOMContentLoaded", () => {
     likeButton.textContent = likedState ? "좋아요 취소" : "좋아요";
   }
 
-  function handleBookmarkToggle() {
-    if (!bookmarkButton) return;
-    const bookmarks = loadBookmarks();
-    const numericId = Number(postId);
-    const index = bookmarks.indexOf(numericId);
-    if (index > -1) {
-      bookmarks.splice(index, 1);
-    } else {
-      bookmarks.push(numericId);
-    }
-    localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
-    updateBookmarkButton(bookmarks.includes(numericId));
-  }
-
-  function initBookmarkState() {
-    const bookmarks = loadBookmarks();
-    updateBookmarkButton(bookmarks.includes(Number(postId)));
-  }
-
-  function updateBookmarkButton(isBookmarked) {
-    if (!bookmarkButton) return;
-    bookmarkButton.textContent = isBookmarked ? "북마크 해제" : "북마크";
-    bookmarkButton.setAttribute("aria-pressed", String(isBookmarked));
-  }
-
-  function loadBookmarks() {
-    try {
-      const stored = localStorage.getItem(BOOKMARK_KEY);
-      if (!stored) return [];
-      return JSON.parse(stored);
-    } catch {
-      return [];
+  function renderPostError(message) {
+    postTitle.textContent = message;
+    postMeta.textContent = "";
+    postContent.innerHTML = "";
+    likeCountEl.textContent = "0";
+    viewCountEl.textContent = "0";
+    replyCountEl.textContent = "0";
+    const postFigure = document.getElementById("post-figure");
+    if (postFigure) {
+      postFigure.hidden = true;
     }
   }
-
-function renderPostError(message) {
-  postTitle.textContent = message;
-  postMeta.textContent = "";
-  postContent.innerHTML = "";
-  likeCountEl.textContent = "0";
-  viewCountEl.textContent = "0";
-  replyCountEl.textContent = "0";
-  const postFigure = document.getElementById("post-figure");
-  if (postFigure) {
-    postFigure.hidden = true;
-  }
-}
 
   function disableInteractions() {
     likeButton?.setAttribute("disabled", "true");
-    bookmarkButton?.setAttribute("disabled", "true");
     commentForm?.setAttribute("hidden", "true");
     loadMoreButton?.setAttribute("disabled", "true");
+    disableVoteButtons();
   }
 });
 

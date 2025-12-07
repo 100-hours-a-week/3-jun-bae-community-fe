@@ -1,88 +1,95 @@
 <!doctype html>
-<html lang="ko">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Community | Posts</title>
-    <link rel="stylesheet" href="../css/pico.min.css">
-    <script src="../js/core/layout.js"></script>
-    <style>
-      .toolbar {
-        margin-bottom: 2rem;
-      }
+<html lang="ko" data-theme="dark">
 
-      .post-meta-stats {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-        color: var(--pico-muted-color);
-      }
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Community | Posts</title>
+  <link rel="stylesheet" href="../css/pico.min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/modal.css">
+  <script src="../js/core/layout.js"></script>
+  <style>
+    .toolbar {
+      margin-bottom: 2rem;
+    }
 
-      .post-meta-stats strong {
-        color: var(--pico-contrast);
-        margin-right: 0.35rem;
-      }
+    .post-meta-stats {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      color: var(--pico-muted-color);
+    }
 
-      .post-card-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 1rem;
-        margin-top: 1.25rem;
-      }
+    .post-meta-stats strong {
+      color: var(--pico-contrast);
+      margin-right: 0.35rem;
+    }
 
-      .empty-state {
-        padding: 3rem 1.5rem;
-        text-align: center;
-        color: var(--pico-muted-color);
-        border: 1px dashed var(--pico-muted-border-color);
-        border-radius: var(--pico-border-radius);
-      }
+    .post-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
 
-      .parent {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        grid-template-rows: 1fr;
-        grid-column-gap: 0px;
-        grid-row-gap: 0px;
+    .empty-state {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: var(--pico-muted-color);
+      border: 1px dashed var(--pico-muted-border-color);
+      border-radius: var(--pico-border-radius);
+    }
 
-        align-items: end;
-      }
-      .parent > * {
-        margin-bottom: 1rem;
-      }
-    </style>
-  </head>
-  <body>
-    
-    <main class="container">
-      <div class="grid toolbar" role="search">
-        <input type="search" id="post-search" name="query" placeholder="Search posts" aria-label="Search posts">
-        <select id="post-sort" name="sort" aria-label="Sort posts">
-          <option value="latest">Latest</option>
-          <option value="popular">Most Liked</option>
-          <option value="commented">Most Commented</option>
-        </select>
+    .parent {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      grid-template-rows: 1fr;
+      grid-column-gap: 0px;
+      grid-row-gap: 0px;
+
+      align-items: end;
+    }
+
+    .parent>* {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="container">
+    <div class="grid toolbar" role="search">
+      <input type="search" id="post-search" name="query" placeholder="Search posts" aria-label="Search posts">
+      <select id="post-sort" name="sort" aria-label="Sort posts">
+        <option value="latest">Latest</option>
+        <option value="popular">Most Liked</option>
+        <option value="commented">Most Commented</option>
+        <option value="views">Most Viewed</option>
+      </select>
+    </div>
+    <section aria-live="polite" aria-busy="false" id="post-feed">
+      <heading>
+        <h1 style="margin: 0px">Community Feed</h1>
+        <div class="grid parent">
+          <p>Scroll to load more posts from the community.</p>
+          <a href="/pages/postadd.html" role="button" data-auth='user' class="primary">Write a New Post</a>
+        </div>
+      </heading>
+      <div id="post-list" class="ㅣ" data-state="loading">
+        <p class="empty-state" id="post-empty">게시글이 없습니다.</p>
       </div>
-      <section aria-live="polite" aria-busy="false" id="post-feed">
-        <header>
-          <h1 style="margin: 0px">Community Feed</h1>
-          <div class="grid parent">
-            <p>Scroll to load more posts from the community.</p>
-            <a href="/pages/postadd.html" role="button" data-auth='user' class="primary">Write a New Post</a>
-          </div>
-        </header>
-        <div id="post-list" class="ㅣ" data-state="loading">
-          <p class="empty-state" id="post-empty">게시글이 없습니다.</p>
-        </div>
-        <div id="scroll-anchor" role="status" class="container" data-loading="false">
-          <progress id="post-loading-indicator" hidden>게시글을 불러오는 중입니다.</progress>
-        </div>
-      </section>
-    </main>
-    <script type="module" src="../js/core/auth.js"></script>
-    <script type="module" src="../js/posts.js"></script>
-  </body>
+      <div id="scroll-anchor" role="status" class="container" data-loading="false">
+        <progress id="post-loading-indicator" hidden>게시글을 불러오는 중입니다.</progress>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="../js/core/auth.js"></script>
+  <script type="module" src="../js/posts.js"></script>
+</body>
+
 </html>

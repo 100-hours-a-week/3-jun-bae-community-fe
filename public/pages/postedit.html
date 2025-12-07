@@ -1,42 +1,48 @@
 <!doctype html>
-<html lang="ko">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Community | Edit Post</title>
-    <link rel="stylesheet" href="../css/pico.min.css">
-    <script src="../js/core/layout.js"></script>
-  </head>
-  <body>
-    <main class="container">
-      <article>
-        <header>
-          <h1>Edit Post</h1>
-          <p>Update the content and metadata for this post.</p>
-        </header>
-        <form id="post-edit-form">
-          <label for="edit-title">Title</label>
-          <input type="text" id="edit-title" name="title" maxlength="150" required>
-          <label for="edit-content">Content</label>
-          <textarea id="edit-content" name="content" rows="12" placeholder="Update your post content" maxlength="20000"></textarea>
-          <label for="edit-image">Cover Image URL</label>
-          <input type="url" id="edit-image" name="coverImage" placeholder="https://example.com/image.jpg">
-          <label for="edit-image-file">Upload New Cover Image</label>
-          <input type="file" id="edit-image-file" name="coverImageFile" accept="image/*">
-          <fieldset>
-            <label>
-              <input type="checkbox" id="edit-allow-comments" name="allowComments" value="true" checked>
-              Allow comments on this post
-            </label>
-          </fieldset>
-          <div class="grid">
-            <button type="submit" role="button" id="edit-submit-button">Save Changes</button>
-            <button type="button" class="secondary" role="button" id="delete-post-button">Delete Post</button>
-          </div>
-        </form>
-      </article>
-    </main>
-    <script type="module" src="../js/core/auth.js"></script>
-    <script type="module" src="../js/postedit.js"></script>
-  </body>
+<html lang="ko" data-theme="dark">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Community | Edit Post</title>
+  <link rel="stylesheet" href="../css/pico.min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/modal.css">
+  <script src="../js/core/layout.js"></script>
+</head>
+
+<body>
+  <main class="container">
+    <article>
+      <heading>
+        <h1>Edit Post</h1>
+        <p>Update the content and metadata for this post.</p>
+      </heading>
+      <form id="post-edit-form">
+        <label for="edit-title">Title</label>
+        <input type="text" id="edit-title" name="title" maxlength="150" required>
+        <label for="edit-content">Content</label>
+        <textarea id="edit-content" name="content" rows="12" placeholder="Update your post content"
+          maxlength="20000"></textarea>
+        <label for="edit-image">Cover Image URL</label>
+        <input type="url" id="edit-image" name="coverImage" placeholder="https://example.com/image.jpg">
+        <label for="edit-image-file">Upload New Cover Image</label>
+        <input type="file" id="edit-image-file" name="coverImageFile" accept="image/*">
+        <fieldset>
+          <label>
+            <input type="checkbox" id="edit-allow-comments" name="allowComments" value="true" checked>
+            Allow comments on this post
+          </label>
+        </fieldset>
+        <div class="grid">
+          <button type="submit" role="button" id="edit-submit-button">Save Changes</button>
+          <button type="button" class="secondary" role="button" id="delete-post-button">Delete Post</button>
+        </div>
+      </form>
+    </article>
+  </main>
+  <script type="module" src="../js/core/auth.js"></script>
+  <script type="module" src="../js/postedit.js"></script>
+</body>
+
 </html>
