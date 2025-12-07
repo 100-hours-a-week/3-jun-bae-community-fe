@@ -220,6 +220,12 @@ document.addEventListener("DOMContentLoaded", () => {
   async function handleVote(voteType) {
     if (!voteType || !postId) return;
 
+    const user = getSessionUser();
+    if (!user) {
+      Modal.alert("로그인 후 투표가 가능합니다.");
+      return;
+    }
+
     try {
       const response = await fetchWithTimeout(`${API_BASE}/posts/${postId}/vote`, {
         method: "POST",
@@ -233,11 +239,15 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("투표에 실패했습니다.");
       }
 
-      // Since API doesn't return result, we check against local post data if available
-      // or re-fetch post to get updated status. 
-      // However, for immediate feedback, we can check authorType if available.
-      // But let's re-fetch to be safe and get the canonical result.
-      await loadPost();
+      const result = await response.json();
+      if (result.success && result.data) {
+        const { correct, userTotalScore } = result.data;
+        showVoteResult(voteType, correct, userTotalScore);
+        disableVoteButtons();
+      } else {
+        // Fallback
+        await loadPost();
+      }
 
     } catch (error) {
       console.error(error);
@@ -245,19 +255,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function showVoteResult(voteType, isCorrect) {
+  function showVoteResult(voteType, isCorrect, score) {
     if (!voteResult) return;
 
     voteResult.hidden = false;
     voteResult.className = "vote-result"; // Reset classes
 
     if (isCorrect) {
-      voteResult.textContent = "정답입니다! 🎉";
+      voteResult.innerHTML = `정답입니다! 🎉<br>`;
+
       voteResult.classList.add("vote-correct");
       triggerConfetti();
     } else {
-      voteResult.textContent = "틀렸습니다. 😢";
+      voteResult.innerHTML = `틀렸습니다. 😢<br>`;
       voteResult.classList.add("vote-incorrect");
+    }
+    if (score != null) {
+      voteResult.innerHTML += `<small>현재 점수: ${formatNumber(score)}점</small>`;
     }
   }
 
@@ -270,8 +284,57 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function triggerConfetti() {
-    // Simple confetti effect using canvas or just CSS animation
-    // For now, let's just rely on the CSS bounce animation
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    function randomInRange(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    const interval = setInterval(function () {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      // 입자 생성
+      createConfettiParticles(10);
+    }, 250);
+  }
+
+  function createConfettiParticles(count) {
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff'];
+    const container = document.body;
+
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      el.style.position = 'fixed';
+      el.style.width = '10px';
+      el.style.height = '10px';
+      el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.top = '-10px';
+      el.style.zIndex = '9999';
+      el.style.pointerEvents = 'none';
+      el.style.transition = 'top 2s ease-in, transform 2s linear';
+
+      container.appendChild(el);
+
+      // Trigger animation
+      requestAnimationFrame(() => {
+        el.style.top = '110vh';
+        el.style.transform = `rotate(${Math.random() * 360}deg)`;
+      });
+
+      // Cleanup
+      setTimeout(() => {
+        el.remove();
+      }, 2000);
+    }
   }
 
   async function handleLikeToggle() {
