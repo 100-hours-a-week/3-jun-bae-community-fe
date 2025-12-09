@@ -50,6 +50,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (initial) {
         state.cursor = null;
         state.hasNext = true;
+        observer.observe(scrollAnchor);
+        scrollAnchor.innerHTML = "";
+        scrollAnchor.removeAttribute("data-error");
+        if (loadingIndicator) {
+          scrollAnchor.appendChild(loadingIndicator);
+        }
       }
       if (state.cursor && !initial) {
         params.set("cursorId", state.cursor);
